@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Initial setup for ubuntu servers
+  hosts: all
   become: true
   vars:
     created_username: josh
@@ -44,10 +45,8 @@
       apt:
         pkg:
           - curl
-          - vim
           - git
           - ufw
-          - net-tools
           - neofetch
         state: latest
         update_cache: true
@@ -74,3 +73,17 @@
         name: sshd
         state: restarted
       when: sshd_config.changed
+
+    - name: Include keyfile
+      include_vars: tailscale_oauth_key.yml
+
+    - name: Install and configure Tailscale
+      include_role:
+        name: artis3n.tailscale
+      vars:
+        tailscale_authkey: "{{ oauth_key['tailscale'] }}"
+        verbose: true
+        tailscale_tags:
+          - "servers"
+        tailscale_oauth_ephemeral: false
+        tailscale_oauth_preauthorized: true
