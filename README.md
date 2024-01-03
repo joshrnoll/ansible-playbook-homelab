@@ -1,4 +1,36 @@
 # A Collection of Ansible Playbooks for my Homelab
+## Usage
+First, cd into the directory where you cloned the repo. Then, create a hosts.ini file
+
+```
+nano hosts.ini
+```
+
+An example hosts file is below. Add any hosts that you want docker installed on to a group called 'docker'
+
+```
+[servers]
+192.168.0.100
+192.168.0.101
+
+[docker]
+192.168.0.100
+```
+
+The command to run initial setup for ubuntu servers is:
+
+```
+nsible-playbook -i hosts.ini ./ubuntusetup/playbook.yml -u <username> --become --ask-vault-pass
+```
+
+To install docker on all desired machines, run:
+
+```
+ansible-playbook -i hosts.ini docker.yml -u <username> --become
+```
+
+## Recent additions
+
 Recently added support in the ubuntusetup playbook for install/configuring of tailscale using the [artis3n.tailscale](https://galaxy.ansible.com/ui/standalone/roles/artis3n/tailscale/) module. <br>
 
 Authentication to tailscale requires an [OAuth client](https://tailscale.com/kb/1215/oauth-clients) key to be created in the tailscale admin console. Optionally, you can also use a tailscale auth key, however these have a maximum lifetime of 90 days. <br>
