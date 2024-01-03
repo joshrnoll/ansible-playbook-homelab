@@ -1,11 +1,9 @@
 # docker.yml
-- hosts: ubuntu
+- hosts: docker
   user: josh
   become: yes
-  vars:
-    docker_compose_version: "1.29.2"
   tasks:
-    # UPGRADE AND INSTALL REQUIRED UBUNTU PACKAGES
+    #PREREQUISITES
     - name: Update apt cache
       apt: update_cache=yes cache_valid_time=3600
 
@@ -23,7 +21,7 @@
           - ca-certificates
           - curl
           - software-properties-common
-          - gnupg-agent
+          - gnupg
 
     # DOCKER INSTALLATION
     - name: Add an apt signing key for Docker
@@ -46,25 +44,13 @@
           - docker-ce
           - docker-ce-cli
           - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
 
     - name: Add user to docker group
       user:
         name: "{{ansible_user}}"
         group: docker
-
-    - name: Download docker-compose {{ docker_compose_version }}
-      get_url:
-        url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
-        dest: ~/docker-compose
-        mode: "+x"
-
-    - name: Check docker-compose exists
-      stat: path=~/docker-compose
-      register: docker_compose
-
-    - name: Move docker-compose to /usr/local/bin/docker-compose
-      command: mv ~/docker-compose /usr/local/bin/docker-compose
-      when: docker_compose.stat.exists
 
     # REQUIRED PACKAGES FOR USING ANSIBLE DOCKER (for portainer installation below)
     - name: Install related Ubuntu packages
@@ -90,7 +76,7 @@
         restart_policy: always
         published_ports:
           - "8000:8000"
-          - "9000:9000"
+          - "9443:9443"
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
@@ -100,7 +86,7 @@
       ufw:
         state: enabled
         rule: allow
-        port: "9000"
+        port: "9443"
         proto: tcp
 
     - name: Open SSH port

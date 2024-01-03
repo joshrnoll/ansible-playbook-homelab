@@ -1,0 +1,11 @@
+- name: Update apt and install required system packages
+  apt:
+    pkg:
+      - curl
+      - nano
+      - vim
+      - git
+      - ufw
+      - neofetch
+    state: latest
+    update_cache: true
