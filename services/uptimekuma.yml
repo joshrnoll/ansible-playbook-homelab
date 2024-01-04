@@ -1,0 +1,32 @@
+---
+- name: Install and Configure Uptime Kuma
+  hosts: uptimekuma
+  user: josh
+
+  tasks:
+    
+    - name: Verify docker installation
+      ansible.builtin.shell: docker --version
+      register: docker_installed
+      ignore_errors: true
+    
+    - block:
+      - name: Pull image and deploy container
+        docker_container:
+          name: uptime-kuma
+          image: louislam/uptime-kuma
+          state: started
+          restart_policy: unless-stopped
+          volumes: ~/uptime-kuma/app:/app/data
+          published_ports:
+            - "3001:3001"  # <Host Port>:<Container Port>
+
+      - name: Open firewall ports
+        become: yes
+        ufw:
+          state: enabled
+          rule: allow
+          port: "3001"
+          proto: any
+      when: not docker_installed.failed 
+...
