@@ -1,4 +1,14 @@
 ---
+- name: UFW - Enable and deny by default
+  community.general.ufw:
+    state: enabled
+    default: deny
+
+- name: UFW - Allow SSH connections
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
 - name: Disable SSH password auth
   lineinfile:
     dest: /etc/ssh/sshd_config
