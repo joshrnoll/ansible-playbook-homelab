@@ -1,12 +1,24 @@
 ---
 - name: Initial setup for ubuntu servers
-  hosts: all
+  hosts: ubuntu
   become: true
 
   tasks:
     - name: Install aptitude
       apt:
         name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Update apt and install required system packages
+      apt:
+        pkg:
+          - curl
+          - nano
+          - vim
+          - git
+          - ufw
+          - neofetch
         state: latest
         update_cache: true
 
@@ -20,12 +32,6 @@
       vars: 
         authorized_user: josh
 
-    - name: Install desired packages
-      import_tasks: packages.yml
-
-    - name: Configure firewall
-      import_tasks: firewall.yml
-
     - name: Install and bring up tailscale
-      import_tasks: tailscale.yml
+      import_tasks: ../tailscale/tailscale.yml
 ...
