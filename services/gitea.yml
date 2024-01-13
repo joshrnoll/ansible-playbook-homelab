@@ -1,10 +1,10 @@
 ---
-- name: Install and Configure {{ service_name }}
-  hosts: uptimekuma
+- name: Install and Configure {{service_name}}
+  hosts: "{{service_name}}"
   user: josh
   vars:
-    service_name: uptime-kuma
-    image_name: louislam/uptime-kuma
+    service_name: gitea
+    image_name: gitea/gitea
     image_tag: latest
 
   tasks:
@@ -21,16 +21,27 @@
           image: "{{ image_name }}:{{ image_tag }}"
           state: started
           restart_policy: unless-stopped
-          volumes: ~/{{ service_name }}/app:/app/data
+          volumes: 
+            - ~/{{ service_name }}/data:/data
+            - /etc/timezone:/etc/timezone:ro
+            - /etc/localtime:/etc/localtime:ro
           published_ports:
-            - "3001:3001"  # <Host Port>:<Container Port>
+            - "3000:3000"
+            - "222:22"
+          env:
+            PUID: "1000"
+            PGID: "999"
 
       - name: Open firewall ports
         become: yes
         ufw:
           state: enabled
           rule: allow
-          port: "3001"
+          port: "{{ item }}"
           proto: any
+        loop:
+          - "3000"
+          - "222"
+
       when: not docker_installed.failed 
 ...
