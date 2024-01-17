@@ -1,4 +1,6 @@
 ---
+# Currently uses image with SQLLite
+# TODO -- Modify to use specific version tags (rather than latest) and MariaDB
 - name: Install and Configure {{service_name}}
   hosts: "{{service_name}}"
   user: josh
@@ -8,7 +10,6 @@
     image_tag: latest
 
   tasks:
-    
     - name: Verify docker installation
       ansible.builtin.shell: docker --version
       register: docker_installed

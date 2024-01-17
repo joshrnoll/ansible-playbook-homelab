@@ -1,0 +1,32 @@
+---
+- name: Initial setup for proxmox servers
+  hosts: proxmox
+  serial: 1
+  user: root
+  become: true
+
+  tasks:
+    - name: Update apt and install required system packages
+      apt:
+        pkg:
+          - aptitude
+          - curl
+          - nano
+          - vim
+          - git
+          - ufw
+          - neofetch
+          - python3-proxmoxer
+          - python3-requests
+        state: latest
+        update_cache: true
+
+    - name: Basic security hardening
+      import_tasks: security.yml
+
+    # - name: Install and bring up tailscale
+    #   import_tasks: ../tailscale/tailscale.yml
+
+    - name: Deploy VMs
+      import_tasks: machines.yml
+...

@@ -1,4 +1,5 @@
 ---
+# TODO -- Modify to use specific version tag (rather than latest)
 - name: Install and Configure {{ service_name }}
   hosts: uptimekuma
   user: josh

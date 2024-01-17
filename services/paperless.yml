@@ -1,0 +1,70 @@
+---
+# WORK IN PROGRESS
+- name: Install and Configure {{service_name}}
+  hosts: "{{service_name}}"
+  user: josh
+  vars:
+    service_name: paperless
+    image_name: ghcr.io/paperless-ngx/paperless-ngx
+    image_tag: latest
+
+  tasks:
+    
+    - name: Verify docker installation
+      ansible.builtin.shell: docker --version
+      register: docker_installed
+      ignore_errors: true
+    
+    - block:
+      # - name: Create redis network
+      #   docker_network:
+      #     name: redis
+      #     driver: bridge
+      #     state: present
+
+      - name: Pull image and deploy redis server
+        docker_container:
+          name: redis
+          image: docker.io/library/redis:7
+          restart_policy: unless-stopped
+          # networks:
+          #   - name: redis
+          #   - name: bridge
+          volumes:
+            - ~/{{ service_name }}/redisdata:/data
+          # published_ports:
+          #   - 6379:6379
+      
+      - name: Pull image and deploy {{ service_name }} container
+        docker_container:
+          name: "{{ service_name }}"
+          image: "{{ image_name }}:{{ image_tag }}"
+          state: started
+          restart_policy: unless-stopped
+          # networks:
+          # - name: redis
+          # - name: bridge
+          volumes: 
+            - ~/{{ service_name }}/data:/usr/src/paperless/data
+            - ~/{{ service_name }}/media:/usr/src/paperless/media
+            - ~/{{ service_name }}/.export:/usr/src/paperless/export
+            - ~/{{ service_name }}/.consume:/usr/src/paperless/consume
+          published_ports:
+            - 8001:8000
+          env:
+            PAPERLESS_REDIS: redis://redis:6379
+          links:
+            - redis:redis
+
+      - name: Open firewall ports
+        become: yes
+        ufw:
+          state: enabled
+          rule: allow
+          port: "{{ item }}"
+          proto: any
+        loop:
+          - "8000"
+
+      when: not docker_installed.failed 
+...
