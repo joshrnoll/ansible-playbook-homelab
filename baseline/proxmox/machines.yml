@@ -13,6 +13,7 @@
     timeout: 90
 
     # Basic VM info
+    vmid: 105
     name: cloud-test
     ostype: l26 # See https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_kvm_module.html
     
