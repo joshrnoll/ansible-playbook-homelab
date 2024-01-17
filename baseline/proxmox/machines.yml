@@ -2,49 +2,45 @@
 - name: Import API token
   include_vars: secrets.yml
 
-- name: Clone cloud-init template
+- name: Create VM
   community.general.proxmox_kvm:
-    
-    # Node and basic VM info
-    node: opti-hst-03 # Where the cloud-init template is
-    target: opti-hst-01
-    newid: 105 
-    name: ansible-deploy-test
-    ostype: l26 # See https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_kvm_module.html
-    
-    # Hardware info
-    memory: 8192
-    cores: 2
-    scsi: #TODO
-    scsihw: virtio-scsi-pci
-    ide: #TODO
-    vga: serial0
-    
-    # Storage and network info
-    storage: ceph-pool-01
-    net: '{"net0":"virtio,bridge=vmbr0,tag=7"}'
-    ipconfig: '{"ipconfig0"="ip="10.0.7.251/24",gw="10.0.7.1""}'
-    
-    # Cloud-init info
-    ciuser: josh
-    cipassword: #TODO
-
-    # Desired state
-    state: present
-
-    # Credentials
+    # Credentials and host/node to work from
+    node: opti-hst-01
     api_user: root@pam
     api_token_id: "{{ proxmox_token_id }}"
     api_token_secret: "{{ proxmox_token_secret }}"
     api_host: 10.0.7.6
     timeout: 90
 
-- name: Start VM 
-  community.general.proxmox_kvm:
-    node: opti-hst-03
-    name: ansible-deploy-test
-    api_user: root@pam
-    api_token_id: "{{ proxmox_token_id }}"
-    api_token_secret: "{{ proxmox_token_secret }}"
-    api_host: 10.0.7.6
-    state: started
+    # Basic VM info
+    name: cloud-test
+    ostype: l26 # See https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_kvm_module.html
+    
+    # Hardware info
+    memory: 8192
+    cores: 2
+    scsi: 
+      scsi0:
+        storage: ceph-pool-01
+        size: 64
+        format: qcow2
+    scsihw: virtio-scsi-pci
+    ide:
+      ide2: 'ceph-pool-01:cloudinit,format=qcow2'
+    vga: serial0
+    boot: order=scsi0,ide2
+    
+    # Storage and network info
+    storage: ceph-pool-01
+    net:
+      net0: 'virtio,bridge=vmbr0,tag=7'
+    ipconfig:
+      ipconfig0: 'ip=10.0.7.251/24,gw=10.0.7.1'
+    nameservers: 10.0.30.75
+    
+    # Cloud-init info
+    ciuser: josh
+    cipassword: password12345
+
+    # Desired state
+    state: present
