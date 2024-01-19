@@ -1,64 +1,90 @@
 ---
-- name: Import API token
+- name: Import encrypted variables
   include_vars: secrets.yml
+
+- name: Import machine inventory
+  include_vars: machine_inventory.yml
 
 - name: Create VM
   community.general.proxmox_kvm:
     # Credentials and host/node to work from
     node: opti-hst-03
-    api_user: root@pam
+    api_user: "{{ proxmox_username }}"
     api_token_id: "{{ proxmox_token_id }}"
     api_token_secret: "{{ proxmox_token_secret }}"
-    api_host: 10.0.7.8
+    api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
 
     # Basic VM info
-    vmid: 105
-    name: cloud-test
-    ostype: l26 # See https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_kvm_module.html
+    vmid: "{{ item.vmid }}"
+    name: "{{ item.name }}"
+    ostype: "{{ item.ostype }}" # See https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_kvm_module.html
     
     # Hardware info
-    memory: 8192
-    cores: 2
+    memory: "{{ item.memory }}"
+    cores: "{{ item.cores }}"
     scsihw: virtio-scsi-pci
     ide:
-      ide2: 'ceph-pool-01:cloudinit,format=qcow2'
+      ide2: '{{ item.storage }}:cloudinit,format=qcow2'
     serial: 
       serial0: socket
     vga: serial0
     boot: order=scsi0;ide2
     
+    ## TODO - Find a way to specify number of interfaces in vars
     # Storage and network info
     net:
-      net0: 'virtio,bridge=vmbr0,tag=7'
+      net0: 'virtio,bridge=vmbr0,tag={{ item.vlan }}'
     ipconfig:
-      ipconfig0: 'ip=10.0.7.251/24,gw=10.0.7.1'
-    nameservers: 10.0.30.75
+      ipconfig0: 'ip={{ item.ip_address }},gw={{ item.gateway }}'
+    nameservers: "{{ item.nameservers }}"
     
     # Cloud-init info
-    ciuser: josh
+    ciuser: "{{ ciuser }}"
     cipassword: "{{ cipassword }}"
     sshkeys: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
     
     # Desired state
     state: present
+  
+  # Loop through list of machines in machine_inventory.yml
+  loop: "{{ machines }}"
 
+# Import the cloud-init disk from the template VM
 - name: Import cloud-init disk
   community.general.proxmox_disk:
-    api_user: root@pam
+    api_user: "{{ proxmox_username }}"
     api_token_id: "{{ proxmox_token_id }}"
     api_token_secret: "{{ proxmox_token_secret }}"
-    api_host: 10.0.7.8  
-    vmid: 105
+    api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
+    vmid: "{{ item.vmid }}"
     disk: scsi0
-    import_from: ceph-pool-01:base-9000-disk-0
-    storage: ceph-pool-01
+    import_from: "{{ item.storage }}:base-9000-disk-0"
+    storage: "{{ item.storage }}"
     state: present
+  loop: "{{ machines }}"
 
+# Once the disk has been imported, the VM can be migrated to the desired node
+- name: Migrate VM to desired node
+  community.general.proxmox_kvm:
+    vmid: "{{ item.vmid }}" 
+    node: "{{ item.node }}"
+    api_user: "{{ proxmox_username }}"
+    api_token_id: "{{ proxmox_token_id }}"
+    api_token_secret: "{{ proxmox_token_secret }}"
+    api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
+    state: present
+    migrate: true
+  loop: "{{ machines }}"
+
+# After migration, the VM can be powered on
 - name: Start VM 
   community.general.proxmox_kvm:
-    vmid: 105    
-    api_user: root@pam
+    vmid: "{{ item.vmid }}" 
+    api_user: "{{ proxmox_username }}"
     api_token_id: "{{ proxmox_token_id }}"
     api_token_secret: "{{ proxmox_token_secret }}"
-    api_host: 10.0.7.8
+    api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
     state: started
+  loop: "{{ machines }}"
+  ignore_errors: true
+
