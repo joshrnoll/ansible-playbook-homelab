@@ -1,7 +1,6 @@
 ---
 - name: Initial setup for proxmox servers
   hosts: proxmox
-  serial: 1
   user: root
   become: true
 
@@ -24,9 +23,11 @@
     - name: Basic security hardening
       import_tasks: security.yml
 
-    # - name: Install and bring up tailscale
-    #   import_tasks: ../tailscale/tailscale.yml
+    - name: Install and bring up tailscale
+      import_tasks: ../tailscale/tailscale.yml
 
-    - name: Deploy VMs
-      import_tasks: machines.yml
+    - name: Ensure templates exist
+      import_tasks: machines_setup.yml
+
+- import_playbook: machines_deploy.yml
 ...
