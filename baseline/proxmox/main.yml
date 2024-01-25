@@ -25,9 +25,9 @@
 
     - name: Install and bring up tailscale
       import_tasks: ../tailscale/tailscale.yml
-
-    - name: Ensure templates exist
-      import_tasks: machines_setup.yml
+    
+    - name: Ensure template VMs exist
+      include_tasks: machines_setup.yml
 
 - import_playbook: machines_deploy.yml
 ...

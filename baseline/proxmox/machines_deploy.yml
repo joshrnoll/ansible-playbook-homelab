@@ -3,11 +3,10 @@
   hosts: proxmox
   serial: 1
   user: root
-  become: true
   
   tasks:
 
-    - name: Create VMs from machines_vars.yml
+    - name: Create VMs from machines_deploy_vars.yml
       throttle: 1
       community.general.proxmox_kvm:
         # Credentials and host/node to work from
@@ -50,9 +49,17 @@
         state: present
       ignore_errors: true
 
-      # Loop through desired machines in machine_inventory.yml
-      loop: "{{ machines }}"
-
+      # Loop through desired machines in machines_deploy_vars.yml
+      loop: "{{ machines_deploy }}"
+    
     - name: Import cloud init drive and power VMs on
-      include_tasks: machines_finish.yml
-      loop: "{{ machines }}"
+      include_tasks: machines_bootstrap.yml
+      loop: "{{ machines_deploy }}"
+
+    # - name: Delete any desired VMs
+    #   include_tasks: machines_delete.yml
+    #   loop: "{{ machines_delete }}"
+    
+    # - name: Make changes and restart as necessary
+    #   include_tasks: machines_change.yml
+    #   loop: "{{ machines_change }}"

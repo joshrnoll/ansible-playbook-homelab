@@ -1,9 +1,7 @@
 ---
-- name: Import encrypted variables
-  include_vars: secrets.yml
-
-- name: Import machine inventory
-  include_vars: machines_vars.yml
+- name: Import variables
+  include_vars:
+    dir: vars
 
 - name: Get template vmid based on node IP address and set other template vars
   set_fact:
