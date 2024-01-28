@@ -1,5 +1,2 @@
-# ATTENTION: Remove any machines in this list from machines_deploy_vars.yml
-# Failing to do so will result in the machine being deleted and recreated for each node in the cluster.
 machines_delete:
-  - vmid: 110
   - vmid: 105
