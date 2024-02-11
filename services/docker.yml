@@ -83,8 +83,7 @@
         name: portainer
         image: portainer/portainer-ce
         state: started
-        recreate: yes
-        restart_policy: always
+        restart_policy: unless-stopped
         published_ports:
           - "8000:8000"
           - "9443:9443"

@@ -52,6 +52,19 @@
       # Loop through desired machines in machines_deploy_vars.yml
       loop: "{{ machines_deploy }}"
     
+    # Resize boot disk
+    - name: Import cloud-init disk from corresponding template
+      community.general.proxmox_disk:
+        api_user: "{{ proxmox_username }}"
+        api_token_id: "{{ proxmox_token_id }}"
+        api_token_secret: "{{ proxmox_token_secret }}"
+        api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
+        vmid: "{{ item.vmid }}"
+        disk: scsi0
+        size: "{{ item.disk_size }}"
+        storage: "{{ item.storage }}"
+        state: resized
+    
     - name: Import cloud init drive and power VMs on
       include_tasks: machines_bootstrap.yml
       loop: "{{ machines_deploy }}"

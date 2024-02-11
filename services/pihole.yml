@@ -1,0 +1,15 @@
+- name: Pihole configuration
+  hosts: pihole
+  user: josh
+
+  tasks:
+  - name: Open firewall ports
+    become: yes
+    ufw:
+      state: enabled
+      rule: allow
+      port: "{{ item }}"
+      proto: any
+    loop:
+      - "53"
+      - "5335"

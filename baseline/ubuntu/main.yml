@@ -1,19 +1,13 @@
 ---
 - name: Initial setup for ubuntu servers
   hosts: ubuntu
+  user: josh
   become: true
 
   tasks:
-    - name: Install aptitude
-      apt:
-        name: aptitude
-        state: latest
-        update_cache: true
-
     - name: Update apt and install required system packages
       apt:
         pkg:
-          - aptitude
           - pip
           - curl
           - nano

@@ -2,11 +2,12 @@
 - name: Homelab Setup
   hosts: all
   become: yes
-  user: josh
 
+# - import_playbook: baseline/proxmox/main.yml
 - import_playbook: baseline/ubuntu/main.yml
+- import_playbook: services/pihole.yml
 - import_playbook: services/docker.yml
-- import_playbook: services/uptimekuma.yml
+- import_playbook: services/vikunja.yml 
 ...
 
 

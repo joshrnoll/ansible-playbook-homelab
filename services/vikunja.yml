@@ -1,0 +1,121 @@
+---
+- name: Install and Configure {{ service_name }}
+  hosts: "{{ service_name }}"
+  user: josh
+  vars:
+    service_name: vikunja
+    backend_image: vikunja/api
+    frontend_image: vikunja/frontend
+    db_image: mariadb
+    proxy_image: nginx
+    backend_tag: latest
+    frontend_tag: latest
+    db_tag: 10
+    proxy_tag: latest
+
+  tasks:
+
+    - name: Verify docker installation
+      ansible.builtin.shell: docker --version
+      register: docker_installed
+      ignore_errors: true
+
+    - block:
+      
+      - include_vars: secrets.yml
+      
+      - name: Ensure {{ service_name }} directory exists
+        ansible.builtin.file:
+          path: /home/josh/vikunja
+          state: directory
+
+      - name: Copy nginx.conf to server
+        copy:
+          src: ./nginx.conf
+          dest: /home/josh/vikunja/nginx.conf
+          force: true
+      
+      - name: Create vikunja docker network
+        docker_network:
+          name: "{{ service_name }}"
+          state: present
+      
+      - name: Pull image and deploy {{ service_name }} db container
+        docker_container:
+          name: "{{ service_name }}_db"
+          image: "{{ db_image }}:{{ db_tag }}"
+          state: started
+          restart_policy: unless-stopped
+          command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+          volumes:
+            - ~/{{ service_name }}/db:/var/lib/mysql
+          env:
+            MYSQL_ROOT_PASSWORD: supersecret # ADD TO VAULT
+            MYSQL_USER: vikunja
+            MYSQL_PASSWORD: "{{ VIKUNJA_DB_PASSWORD }}"
+            MYSQL_DATABASE: vikunja
+          networks:
+            - name: vikunja
+      
+      - name: Pull image and deploy {{ service_name }} backend container
+        docker_container:
+          name: "{{ service_name }}_backend"
+          image: "{{ backend_image }}:{{ backend_tag }}"
+          state: started
+          restart_policy: unless-stopped
+          volumes: 
+            - ~/{{ service_name }}/files:/app/vikunja/files
+          published_ports:
+            - 3456:3456
+          env:
+            VIKUNJA_DATABASE_HOST: vikunja_db
+            VIKUNJA_DATABASE_PASSWORD: "{{ VIKUNJA_DB_PASSWORD }}"
+            VIKUNJA_DATABASE_TYPE: mysql
+            VIKUNJA_DATABASE_USER: vikunja
+            VIKUNJA_DATABASE_DATABASE: vikunja
+            VIKUNJA_SERVICE_JWTSECRET: "{{ VIKUNJA_JWTSECRET }}"
+            VIKUNJA_SERVICE_FRONTENDURL: https://vikunja.nollhome.casa/
+            VIKUNJA_SERVICE_ENABLEEMAILREMINDERS: "1"
+            VIKUNJA_MAILER_ENABLED: "1"
+            VIKUNJA_MAILER_FORCESSL: "1"
+            VIKUNJA_MAILER_HOST: smtp.gmail.com
+            VIKUNJA_MAILER_PORT: "465"
+            VIKUNJA_MAILER_USERNAME: nollhomelab@gmail.com
+            VIKUNJA_MAILER_PASSWORD: "{{ VIKUNJA_GMAIL_PW }}"
+          networks:
+            - name: vikunja
+      
+      - name: Pull image and deploy {{ service_name }} frontend container
+        docker_container:
+          name: "{{ service_name }}_frontend"
+          image: "{{ frontend_image }}:{{ frontend_tag }}"
+          state: started
+          restart_policy: unless-stopped
+          networks:
+            - name: vikunja
+
+      - name: Pull image and deploy {{ service_name }} proxy container
+        docker_container:
+          name: "{{ service_name }}_proxy"
+          image: "{{ proxy_image }}:{{ proxy_tag }}"
+          state: started
+          restart_policy: unless-stopped
+          recreate: true
+          published_ports:
+            - 8080:80
+          volumes:
+            - ~/{{ service_name }}/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+          networks:
+            - name: vikunja
+
+      - name: Open firewall ports
+        become: yes
+        ufw:
+          state: enabled
+          rule: allow
+          port: "{{ item }}"
+          proto: any
+        loop:
+          - "3456"
+          - "8080"
+      when: not docker_installed.failed
