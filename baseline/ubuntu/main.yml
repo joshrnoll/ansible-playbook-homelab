@@ -8,6 +8,7 @@
     - name: Update apt and install required system packages
       apt:
         pkg:
+          - aptitude
           - pip
           - curl
           - nano

@@ -1,21 +1,26 @@
 ---
 # TODO -- Modify to use specific version tag (rather than latest)
 - name: Install and Configure {{ service_name }}
-  hosts: uptimekuma
+  hosts: "{{ service_name }}"
   user: josh
   vars:
     service_name: uptime-kuma
     image_name: louislam/uptime-kuma
     image_tag: latest
+    authkey: "{{ oauth_key['tailscale'] }}"
+    serve_port: 3001
+  
+  tasks:  
 
-  tasks:
-    
     - name: Verify docker installation
       ansible.builtin.shell: docker --version
       register: docker_installed
       ignore_errors: true
     
     - block:
+      - include_role: 
+          name: ../../roles/tailscale_sidecar
+
       - name: Pull image and deploy {{ service_name }} container
         docker_container:
           name: "{{ service_name }}"
@@ -23,15 +28,7 @@
           state: started
           restart_policy: unless-stopped
           volumes: ~/{{ service_name }}/app:/app/data
-          published_ports:
-            - "3001:3001"  # <Host Port>:<Container Port>
-
-      - name: Open firewall ports
-        become: yes
-        ufw:
-          state: enabled
-          rule: allow
-          port: "3001"
-          proto: any
+          network_mode: container:ts-{{ service_name }}
+          
       when: not docker_installed.failed 
 ...

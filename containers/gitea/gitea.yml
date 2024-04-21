@@ -8,6 +8,8 @@
     service_name: gitea
     image_name: gitea/gitea
     image_tag: latest
+    # authkey: "{{ oauth_key['tailscale'] }}"
+    # serve_port: 3000
 
   tasks:
     - name: Verify docker installation
@@ -15,7 +17,15 @@
       register: docker_installed
       ignore_errors: true
     
-    - block:
+    - block:     
+      - name: Deploy tailscale sidecar container
+        include_role:
+          name: ../../roles/tailscale_sidecar
+        vars:
+          service_name: gitea
+          authkey: "{{ oauth_key['tailscale'] }}"
+          serve_port: 3000
+
       - name: Pull image and deploy {{ service_name }} container
         docker_container:
           name: "{{ service_name }}"
@@ -26,23 +36,15 @@
             - ~/{{ service_name }}/data:/data
             - /etc/timezone:/etc/timezone:ro
             - /etc/localtime:/etc/localtime:ro
-          published_ports:
-            - "3000:3000"
-            - "222:22"
+          
+          # TODO -- Tailscale serve for SSH over port 222
+          # published_ports:
+          #   - "3000:3000"
+          #   - "222:22"
           env:
             PUID: "1000"
             PGID: "999"
-
-      - name: Open firewall ports
-        become: yes
-        ufw:
-          state: enabled
-          rule: allow
-          port: "{{ item }}"
-          proto: any
-        loop:
-          - "3000"
-          - "222"
+          network_mode: container:ts-{{ service_name }}
 
       when: not docker_installed.failed 
 ...

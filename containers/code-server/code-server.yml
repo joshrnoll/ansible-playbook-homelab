@@ -1,0 +1,26 @@
+- name: Install and configure VS Code Server
+  hosts: "{{ service_name }}"
+  vars:
+    service_name: code-server
+    service_tag: latest
+    service_image: lscr.io/linuxserver/code-server
+  
+  tasks:
+    - name: Deploy tailscale sidecar for VS Code Server
+      include_role:
+        name: ../../roles/tailscale_sidecar
+      vars:
+        serve_port: "8443"
+        authkey: "{{ oauth_key['tailscale'] }}"
+
+    - name: Pull image and deploy {{ service_name }} container
+      docker_container:
+        name: "{{ service_name }}"
+        image: "{{ service_image }}:{{ service_tag }}"
+        env:
+          PUID: "1000"
+          PGID: "999"
+          PROXY_DOMAIN: code-server.mink-pirate.ts.net
+        volumes:
+          - ~/{{ service_name }}/config:/config
+        network_mode: container:ts-{{ service_name }}

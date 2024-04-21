@@ -1,0 +1,26 @@
+- name: Install and configure pihole Docker container
+  hosts: "{{ service_name }}-container"
+  vars:
+    service_name: pihole
+    service_tag: latest
+    service_image: pihole/pihole
+
+  tasks:
+
+    - name: Pull image and deploy {{ service_name }} container
+      docker_container:
+        name: "{{ service_name }}"
+        image: "{{ service_image }}:{{ service_tag }}"
+        env:
+          TZ: America/Chicago
+        volumes:
+          - ~/pihole/etc-pihole:/etc/pihole
+          - ~/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+        capabilities:
+          - net_admin
+        restart_policy: unless-stopped
+        published_ports:
+          - "53:53/tcp"
+          - "53:53/udp"
+          - "67:67/udp"
+          - "8081:80/tcp"

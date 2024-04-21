@@ -1,0 +1,42 @@
+---
+- name: Include tailscale keyfile
+  include_vars: tailscale_oauth_key.yml
+
+- name: Ensure {{ service_name }}'s tailscale serve directory exists
+  ansible.builtin.file:
+    path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config
+    state: directory
+
+- name: Copy tailscale serve config file to server
+  copy:
+    src: "{{ serve_config }}"
+    dest: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/{{ serve_config }}
+    force: true
+
+- name: Add port {{ serve_port }} to serve config file
+  lineinfile:
+    backrefs: yes
+    regexp: '^(\s*"Proxy": "http://127\.0\.0\.1:)(\s*)(")'
+    line: '\g<1>{{ serve_port }}\g<3>'
+    path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/serve-config.json
+    state: present
+  when: serve_config == 'serve-config.json'
+
+- name: Pull image and deploy {{ service_name }}'s tailscale container
+  docker_container:
+    name: ts-{{ service_name }}
+    image: tailscale/tailscale:latest
+    hostname: "{{ service_name }}"
+    restart_policy: unless-stopped
+    env:
+      TS_AUTHKEY: "{{ authkey }}?ephemeral=false"
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_EXTRA_ARGS: --advertise-tags=tag:containers
+      TS_SERVE_CONFIG: /config/{{ serve_config }}
+    volumes:
+      - ~/{{ service_name }}/tailscale:/var/lib/tailscale
+      - ~/{{ service_name }}/ts-serve-config:/config
+      - /dev/net/tun:/dev/net/tun
+    capabilities:
+      - net_admin
+      - sys_module

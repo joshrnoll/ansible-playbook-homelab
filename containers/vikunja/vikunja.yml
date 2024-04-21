@@ -1,0 +1,116 @@
+---
+- name: Install and Configure vikunja
+  hosts: vikunja
+  user: josh
+  vars:
+    service_name: vikunja
+    service_image: vikunja/vikunja
+    service_tag: latest
+    db_image: mariadb
+    db_tag: 10
+
+
+  tasks:
+
+    - name: Verify docker installation
+      ansible.builtin.shell: docker --version
+      register: docker_installed
+      ignore_errors: true
+
+    - block:
+      
+      - include_vars: secrets.yml
+      
+      - name: Ensure vikunja directory exists
+        ansible.builtin.file:
+          path: ~/vikunja
+          state: directory
+
+      - name: Deploy vikunja tailscale sidecar container
+        include_role:
+          name: ../../roles/tailscale_sidecar
+        vars:
+          authkey: "{{ oauth_key['tailscale'] }}"
+          serve_port: 3456
+          serve_config: ./vikunja-serve-config.json
+      
+      - name: Pull image and deploy vikunja db container
+        docker_container:
+          name: vikunja_db
+          image: "{{ db_image }}:{{ db_tag }}"
+          state: started
+          restart_policy: unless-stopped
+          command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+          volumes:
+            - ~/vikunja/db:/var/lib/mysql
+          env:
+            MYSQL_ROOT_PASSWORD: "{{ VIKUNJA_DB_ROOT_PASSWORD }}"
+            MYSQL_USER: vikunja
+            MYSQL_PASSWORD: "{{ VIKUNJA_DB_PASSWORD }}"
+            MYSQL_DATABASE: vikunja
+          network_mode: container:ts-{{ service_name }}
+      
+      - name: Pull image and deploy vikunja container
+        docker_container:
+          name: vikunja
+          image: "{{ service_image }}:{{ service_tag }}"
+          state: started
+          restart_policy: unless-stopped
+          volumes: 
+            - ~/vikunja/files:/app/vikunja/files
+          env:
+            VIKUNJA_DATABASE_HOST: localhost
+            VIKUNJA_DATABASE_PASSWORD: "{{ VIKUNJA_DB_PASSWORD }}"
+            VIKUNJA_DATABASE_TYPE: mysql
+            VIKUNJA_DATABASE_USER: vikunja
+            VIKUNJA_DATABASE_DATABASE: vikunja
+            VIKUNJA_SERVICE_JWTSECRET: "{{ VIKUNJA_JWTSECRET }}"
+            VIKUNJA_SERVICE_PUBLICURL: https://vikunja.mink-pirate.ts.net/
+            VIKUNJA_SERVICE_ENABLEREGISTRATION: "0"
+            VIKUNJA_SERVICE_ENABLEEMAILREMINDERS: "1"
+            VIKUNJA_MAILER_ENABLED: "1"
+            VIKUNJA_MAILER_FORCESSL: "1"
+            VIKUNJA_MAILER_HOST: smtp.gmail.com
+            VIKUNJA_MAILER_PORT: "465"
+            VIKUNJA_MAILER_USERNAME: nollhomelab@gmail.com
+            VIKUNJA_MAILER_PASSWORD: "{{ VIKUNJA_GMAIL_PW }}"
+          network_mode: container:ts-{{ service_name }}
+          # networks:
+          #   - name: vikunja
+      
+      # - name: Pull image and deploy vikunja frontend container
+      #   docker_container:
+      #     name: vikunja_frontend
+      #     image: "{{ frontend_image }}:{{ frontend_tag }}"
+      #     state: started
+      #     restart_policy: unless-stopped
+      #     network_mode: container:ts-{{ service_name }}
+      #     # networks:
+      #     #   - name: vikunja
+
+      # - name: Pull image and deploy vikunja proxy container
+      #   docker_container:
+      #     name: vikunja_proxy
+      #     image: "{{ proxy_image }}:{{ proxy_tag }}"
+      #     state: started
+      #     restart_policy: unless-stopped
+      #     recreate: true
+      #     # published_ports:
+      #     #   - 8080:80
+      #     volumes:
+      #       - ~/vikunja/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      #     network_mode: container:ts-{{ service_name }}
+      #     # networks:
+      #     #   - name: vikunja
+
+      # - name: Open firewall ports
+      #   become: yes
+      #   ufw:
+      #     state: enabled
+      #     rule: allow
+      #     port: "{{ item }}"
+      #     proto: any
+      #   loop:
+      #     - "3456"
+      #     - "8080"
+      when: not docker_installed.failed
