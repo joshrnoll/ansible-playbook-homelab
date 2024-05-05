@@ -13,6 +13,7 @@
     dest: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/{{ serve_config }}
     force: true
 
+# TODO - Add option for funnel
 - name: Add port {{ serve_port }} to serve config file
   lineinfile:
     backrefs: yes
@@ -31,7 +32,7 @@
     env:
       TS_AUTHKEY: "{{ authkey }}?ephemeral=false"
       TS_STATE_DIR: /var/lib/tailscale
-      TS_EXTRA_ARGS: --advertise-tags=tag:containers
+      TS_EXTRA_ARGS: --advertise-tags=tag:containers {{ extra_args | default(omit) }}
       TS_SERVE_CONFIG: /config/{{ serve_config }}
     volumes:
       - ~/{{ service_name }}/tailscale:/var/lib/tailscale

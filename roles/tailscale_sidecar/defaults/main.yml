@@ -1,5 +1,2 @@
 ---
-service_name: CHANGEME
-authkey: CHANGEME
-serve_port: CHANGEME
 serve_config: serve-config.json
