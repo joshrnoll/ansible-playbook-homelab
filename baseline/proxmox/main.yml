@@ -13,8 +13,6 @@
           - nano
           - vim
           - git
-          - ufw
-          - neofetch
           - python3-proxmoxer
           - python3-requests
         state: latest
@@ -29,5 +27,5 @@
     - name: Ensure template VMs exist
       include_tasks: machines_setup.yml
 
-- import_playbook: machines_deploy.yml
+# - import_playbook: machines_deploy.yml
 ...

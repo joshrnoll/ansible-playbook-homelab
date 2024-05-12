@@ -75,6 +75,15 @@
         pip:
           name: docker
       when: docker_installed.failed
+  
+    - name: Deploy tailscale sidecar container
+      include_role:
+        name: ../../roles/tailscale_sidecar
+      vars:
+        service_name: portainer
+        authkey: "{{ oauth_key['tailscale'] }}"
+        serve_port: 9443
+        https_container: true
 
     # https://docs.ansible.com/ansible/latest/collections/community/docker/docker_container_module.html#ansible-collections-community-docker-docker-container-module
     - name: Create portainer container
@@ -84,24 +93,7 @@
         image: portainer/portainer-ce
         state: started
         restart_policy: unless-stopped
-        published_ports:
-          - "8000:8000"
-          - "9443:9443"
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
-
-    # FIREWALL SETUP
-    - name: Open Portainer port
-      ufw:
-        state: enabled
-        rule: allow
-        port: "9443"
-        proto: tcp
-
-    - name: Open SSH port
-      ufw:
-        state: enabled
-        rule: allow
-        port: "22"
-        proto: tcp
+        network_mode: container:ts-portainer

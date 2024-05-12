@@ -21,7 +21,16 @@
     line: '\g<1>{{ serve_port }}\g<3>'
     path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/serve-config.json
     state: present
-  when: serve_config == 'serve-config.json'
+
+## TODO - Finish testing HTTPS config
+- name: Add port {{ https_container }} to serve config file
+  lineinfile:
+    backrefs: yes
+    regexp: '^(\s*)("Proxy": "http://)(127\.0\.0\.1:\d*")$'
+    line: '\g<1>"Proxy": "https+insecure://\g<3>'
+    path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/serve-config.json
+    state: present
+  when: https_container is true
 
 - name: Pull image and deploy {{ service_name }}'s tailscale container
   docker_container:
@@ -29,14 +38,15 @@
     image: tailscale/tailscale:latest
     hostname: "{{ service_name }}"
     restart_policy: unless-stopped
+    state: started
     env:
       TS_AUTHKEY: "{{ authkey }}?ephemeral=false"
       TS_STATE_DIR: /var/lib/tailscale
-      TS_EXTRA_ARGS: --advertise-tags=tag:containers {{ extra_args | default(omit) }}
+      TS_EXTRA_ARGS: --advertise-tags=tag:containers #{{ extra_args | default(omit) }}
       TS_SERVE_CONFIG: /config/{{ serve_config }}
     volumes:
-      - ~/{{ service_name }}/tailscale:/var/lib/tailscale
-      - ~/{{ service_name }}/ts-serve-config:/config
+      - /home/{{ ansible_user }}/{{ service_name }}/tailscale:/var/lib/tailscale
+      - /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config:/config
       - /dev/net/tun:/dev/net/tun
     capabilities:
       - net_admin

@@ -1,15 +1,15 @@
 machines_deploy:
-  - name: vikunja-test # Name cannot have an UNDERSCORE _
+  - name: media # Name cannot have an UNDERSCORE _
     vmid: 105
-    memory: 8192
-    cores: 2
-    node: opti-hst-02 # The node that the VM will be created on
+    memory: 16384
+    cores: 4
+    node: opti-hst-01 # The node that the VM will be created on
     ostype: l26
     storage: ceph-pool-01
-    disk_size: 64
-    vlan: 7 # CANNOT BE UPDATED ONCE CREATED!
-    ip_address: 10.0.7.250/24
-    gateway: 10.0.7.1
+    disk_size: 200
+    vlan: 30 # CANNOT BE UPDATED ONCE CREATED!
+    ip_address: 10.0.30.15/24
+    gateway: 10.0.30.15
     nameservers:
       - 10.0.30.75
       - 10.0.10.75

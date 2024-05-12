@@ -64,6 +64,7 @@
         size: "{{ item.disk_size }}"
         storage: "{{ item.storage }}"
         state: resized
+      loop: "{{ machines_deploy }}"
     
     - name: Import cloud init drive and power VMs on
       include_tasks: machines_bootstrap.yml

@@ -16,8 +16,6 @@
         volumes:
           - ~/pihole/etc-pihole:/etc/pihole
           - ~/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
-        capabilities:
-          - net_admin
         restart_policy: unless-stopped
         published_ports:
           - "53:53/tcp"

@@ -15,7 +15,6 @@
           - vim
           - git
           - ufw
-          - neofetch
         state: latest
         update_cache: true
 
