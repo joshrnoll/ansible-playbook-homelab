@@ -1,3 +1,4 @@
 ---
 https_container: false
+public: false
 serve_config: serve-config.json

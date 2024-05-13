@@ -80,7 +80,7 @@
       include_role:
         name: ../../roles/tailscale_sidecar
       vars:
-        service_name: portainer
+        service_name: portainer-{{ ansible_facts['nodename'] }}
         authkey: "{{ oauth_key['tailscale'] }}"
         serve_port: 9443
         https_container: true
@@ -89,11 +89,11 @@
     - name: Create portainer container
       become: no
       docker_container:
-        name: portainer
+        name: portainer-{{ ansible_facts['nodename'] }}
         image: portainer/portainer-ce
         state: started
         restart_policy: unless-stopped
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
-        network_mode: container:ts-portainer
+        network_mode: container:ts-portainer-{{ ansible_facts['nodename'] }}
