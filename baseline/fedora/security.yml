@@ -1,13 +1,23 @@
 ---
-- name: UFW - Enable and deny by default
-  community.general.ufw:
-    state: enabled
-    default: deny
+- name: Ensure firewalld is running and enabled
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: yes
 
-- name: UFW - Allow SSH connections
-  community.general.ufw:
-    rule: allow
-    name: OpenSSH
+- name: Set default zone to 'drop'
+  ansible.builtin.command: firewall-cmd --set-default-zone=drop
+  register: default_zone_set
+  changed_when:
+    - '"ZONE_ALREADY_SET" not in default_zone_set.stderr'
+
+- name: Allow SSH access
+  ansible.builtin.firewalld:
+    zone: drop
+    service: ssh
+    state: enabled
+    permanent: yes
+    immediate: yes
 
 - name: Setup passwordless sudo
   lineinfile:
@@ -36,7 +46,7 @@
     state: present
     regexp: '^#?PermitRootLogin'
     line: 'PermitRootLogin prohibit-password'
-  register: pw)_auth_root
+  register: pw_auth_root
 
 - name: Restart SSH daemon
   service:

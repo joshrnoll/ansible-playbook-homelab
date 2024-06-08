@@ -1,4 +1,4 @@
-# TODO - Add loop to firewall setup... consider making portainer separate file/group?
+# TODO - Make portainer optional?
 - hosts: docker
   user: josh
   become: yes
@@ -74,26 +74,27 @@
       - name: Install python packages
         pip:
           name: docker
-      when: docker_installed.failed
   
-    - name: Deploy tailscale sidecar container
-      include_role:
-        name: ../../roles/tailscale_sidecar
-      vars:
-        service_name: portainer-{{ ansible_facts['nodename'] }}
-        authkey: "{{ oauth_key['tailscale'] }}"
-        serve_port: 9443
-        https_container: true
+      - name: Deploy tailscale sidecar container
+        include_role:
+          name: ../../roles/tailscale_sidecar
+        vars:
+          service_name: portainer-{{ ansible_facts['nodename'] }}
+          authkey: "{{ oauth_key['tailscale'] }}"
+          serve_port: 9443
+          https_container: true
 
-    # https://docs.ansible.com/ansible/latest/collections/community/docker/docker_container_module.html#ansible-collections-community-docker-docker-container-module
-    - name: Create portainer container
-      become: no
-      docker_container:
-        name: portainer-{{ ansible_facts['nodename'] }}
-        image: portainer/portainer-ce
-        state: started
-        restart_policy: unless-stopped
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-          - portainer_data:/data
-        network_mode: container:ts-portainer-{{ ansible_facts['nodename'] }}
+      # https://docs.ansible.com/ansible/latest/collections/community/docker/docker_container_module.html#ansible-collections-community-docker-docker-container-module
+      - name: Create portainer container
+        become: no
+        docker_container:
+          name: portainer-{{ ansible_facts['nodename'] }}
+          image: portainer/portainer-ce
+          state: started
+          restart_policy: unless-stopped
+          volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - portainer_data:/data
+          network_mode: container:ts-portainer-{{ ansible_facts['nodename'] }}
+
+      when: docker_installed.failed
