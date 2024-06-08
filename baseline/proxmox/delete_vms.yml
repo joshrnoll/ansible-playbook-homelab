@@ -1,0 +1,22 @@
+---
+- name: Delete desired VMs on Proxmox cluster
+  hosts: proxmox_api
+  user: root    
+  
+  tasks:
+    
+    - name: Import variables
+      include_vars:
+        dir: vars
+
+    - name: Delete VMs
+      community.general.proxmox_kvm:
+        vmid: "{{ item.vmid }}" 
+        api_user: "{{ proxmox_username }}"
+        api_token_id: "{{ proxmox_token_id }}"
+        api_token_secret: "{{ proxmox_token_secret }}"
+        api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
+        state: absent
+        force: true 
+      loop: "{{ vms_to_delete }}"
+...

@@ -1,0 +1,61 @@
+---
+# Each node has a template with vmid of X000 where X is the 4th octet of the node's IP address
+- name: Get hosts template vmid if destination node is opti-hst-01
+  set_fact: 
+    template_vmid: "6000"
+  when: item.node == "opti-hst-01" 
+
+- name: Get hosts template vmid if destination node is opti-hst-02
+  set_fact: 
+    template_vmid: "7000"
+  when: item.node == "opti-hst-02"
+
+- name: Get hosts template vmid if destination node is opti-hst-03
+  set_fact: 
+    template_vmid: "8000"
+  when: item.node == "opti-hst-03"
+
+# Below no longer functions because this playbook runs against a single host in the proxmox_api group
+# rather than against all proxmox hosts -- therefore hostvars cannot access the necessary info
+# if the VMs destination node is anything other than opti-hst-01
+#
+# - name: Get template vmid based on node IP address 
+#   set_fact:
+#     template_vmid: "{{ hostvars[item.node]['ansible_facts']['vmbr0.7']['ipv4']['address'] | regex_search('\\d{1,3}$') }}000"
+
+# Import the cloud-init disk from the template VM
+- name: Import cloud-init disk from corresponding template
+  community.general.proxmox_disk:
+    api_user: "{{ proxmox_username }}"
+    api_token_id: "{{ proxmox_token_id }}"
+    api_token_secret: "{{ proxmox_token_secret }}"
+    api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
+    vmid: "{{ item.vmid }}"
+    disk: scsi0
+    import_from: "{{ item.storage }}:base-{{ template_vmid }}-disk-0"
+    storage: "{{ item.storage }}"
+    state: present
+
+# Resize boot disk
+- name: Resize the imported cloud-init drive
+  community.general.proxmox_disk:
+    api_user: "{{ proxmox_username }}"
+    api_token_id: "{{ proxmox_token_id }}"
+    api_token_secret: "{{ proxmox_token_secret }}"
+    api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
+    vmid: "{{ item.vmid }}"
+    disk: scsi0
+    size: "{{ item.disk_size }}"
+    storage: "{{ item.storage }}"
+    state: resized
+
+# Power on the VM 
+- name: Start VM 
+  community.general.proxmox_kvm:
+    vmid: "{{ item.vmid }}" 
+    api_user: "{{ proxmox_username }}"
+    api_token_id: "{{ proxmox_token_id }}"
+    api_token_secret: "{{ proxmox_token_secret }}"
+    api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
+    state: started
+...

@@ -1,0 +1,3 @@
+vms_to_delete:
+  - vmid: 110
+  - vmid: 115

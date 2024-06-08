@@ -1,8 +1,4 @@
 ---
-- name: Import variables
-  include_vars:
-    dir: vars
-
 - name: Get template vmid based on node IP address and set other template vars
   set_fact:
     template_vmid: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] | regex_search('\\d{1,3}$') }}000"

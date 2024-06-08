@@ -1,0 +1,31 @@
+vms_to_create:
+  - name: ubuntu-srv-01 # Name cannot have an UNDERSCORE _
+    vmid: 110
+    memory: 8192
+    cores: 2
+    node: opti-hst-02 # The node that the VM will be created on
+    ostype: l26
+    storage: ceph-pool-01
+    disk_size: 100G
+    vlan: 30 # CANNOT BE UPDATED ONCE CREATED!
+    ip_address: 10.0.30.35/24
+    gateway: 10.0.30.1
+    nameservers:
+      - 10.0.30.75
+      - 10.0.10.75
+  
+  - name: ubuntu-srv-02 # Name cannot have an UNDERSCORE _
+    vmid: 115
+    memory: 8192
+    cores: 2
+    node: opti-hst-03 # The node that the VM will be created on
+    ostype: l26
+    storage: ceph-pool-01
+    disk_size: 100G
+    vlan: 30 # CANNOT BE UPDATED ONCE CREATED!
+    ip_address: 10.0.30.40/24
+    gateway: 10.0.30.1
+    nameservers:
+      - 10.0.30.75
+      - 10.0.10.75
+

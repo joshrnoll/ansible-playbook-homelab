@@ -1,0 +1,15 @@
+---
+- name: Modify desired VMs on Proxmox cluster
+  hosts: proxmox_api
+  user: root
+
+  tasks:
+    
+    - name: Import variables
+      include_vars:
+        dir: vars
+    
+    - name: Modify VMs
+      include_tasks: modifications.yml
+      loop: "{{ vms_to_modify }}"
+...
