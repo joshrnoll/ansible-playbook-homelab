@@ -1,28 +1,17 @@
 vms_to_modify:
-  - name: ubuntu-srv-01
-    vmid: 110
-    memory: 4096
-    cores: 1
-    node: opti-hst-02 # The node that the VM will be created on
-    ostype: l26
-    storage: ceph-pool-01
-    vlan: 7 # CANNOT BE UPDATED ONCE CREATED!
-    ip_address: 10.0.30.35/24
-    gateway: 10.0.30.1
-    nameservers:
-      - 10.0.30.75
-      - 10.0.10.75
-  
-  - name: ubuntu-srv-02
-    vmid: 115
-    memory: 4096
-    cores: 1
-    node: opti-hst-03 # The node the VM will be created on
-    ostype: l26
-    storage: ceph-pool-01
-    vlan: 7 # CANNOT BE UPDATED ONCE CREATED!
-    ip_address: 10.0.30.251/24
-    gateway: 10.0.30.1
-    nameservers:
-      - 10.0.30.75
-      - 10.0.10.75
+  # Uncomment below template and modify with VM info. 
+  # Repeat for additional VMs.
+  #
+  # - name: <vm name in proxmox> # Name cannot have an UNDERSCORE _
+  #   vmid: <vmid as integer>
+  #   memory: <memory as integer ex. 4096>
+  #   cores: <cores as integer ex. 2>
+  #   node: <node that the vm will be created on> 
+  #   ostype: l26 # Use l26 for any linux VMs
+  #   storage: <storage for vm disk ex. ceph-pool-01>
+  #   vlan: <vlan id as integer ex. 30> # CANNOT BE UPDATED ONCE CREATED!
+  #   ip_address: <IP in slash notation ex. 192.168.0.100/24>
+  #   gateway: <gateway ex. 192.168.0.1>
+  #   nameservers: <nameservers as list ex. below>
+  #     - 1.1.1.1
+  #     - 8.8.8.8

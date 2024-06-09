@@ -4,12 +4,8 @@
   user: root
   
   tasks:
-    
-    - name: Import variables
-      include_vars:
-        dir: vars
 
-    - name: Create VMs from machines_deploy_vars.yml
+    - name: Create VMs from vms_to_create.yml
       community.general.proxmox_kvm:
         # Credentials and api host to work from
         api_user: "{{ proxmox_username }}"
@@ -52,8 +48,14 @@
 
       # Loop through desired machines in machines_deploy_vars.yml
       loop: "{{ vms_to_create }}"
+      register: vms_created
           
     - name: Bootstrap VMs by importing cloud-init disk, resizing and powering VMs on
       include_tasks: bootstrap.yml
       loop: "{{ vms_to_create }}"
+
+    - name: VMs have been created. COFFEE TIME! (Waiting 10 min for VMs to initalize)
+      pause:
+        minutes: 10
+      when: vms_created.changed
 ...
