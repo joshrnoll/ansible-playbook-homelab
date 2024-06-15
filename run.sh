@@ -1,4 +1,10 @@
 #!/bin/bash
+
+#### WORK IN PROGRESS #####
+
+# Currently, run baseline/proxmox/main.yml first, then run main.yml
+# This will avoid 'unreachable' errors for VMs that haven't been created yet
+
 read -sp 'Enter sudo password: ' BECOME_PASS
 echo
 read -sp 'Enter ansible vault password: ' VAULT_PASS

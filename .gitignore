@@ -1,4 +1,4 @@
 hosts.ini
 tailscale_oauth_key.yml
 media.yml
-secrets.yml
+secrets.*

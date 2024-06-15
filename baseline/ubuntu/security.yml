@@ -36,7 +36,7 @@
     state: present
     regexp: '^#?PermitRootLogin'
     line: 'PermitRootLogin prohibit-password'
-  register: pw)_auth_root
+  register: pw_auth_root
 
 - name: Restart SSH daemon
   service:

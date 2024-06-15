@@ -9,6 +9,7 @@ tasks:
     vars:
       container_name: plex2
       container_image: lscr.io/linuxserver/plex
+      container_tag: latest
       serve_port: 32400
       userspace_networking: false
       public: true

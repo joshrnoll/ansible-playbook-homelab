@@ -2,7 +2,7 @@
 - name: Homelab Setup
   hosts: all
 
-- import_playbook: baseline/proxmox/main.yml
+# - import_playbook: baseline/proxmox/main.yml
 - import_playbook: baseline/fedora/main.yml
 - import_playbook: baseline/ubuntu/main.yml
 # - import_playbook: services/pihole.yml
