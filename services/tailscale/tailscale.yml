@@ -1,14 +1,16 @@
 ---
 - name: Include tailscale keyfile
-  include_vars: tailscale_oauth_key.yml
+  include_vars:
+    dir: ../../vars
 
 - name: Install and bring up Tailscale
   include_role:
     name: artis3n.tailscale
   vars:
-    tailscale_authkey: "{{ oauth_key['tailscale'] }}"
+    tailscale_authkey: "{{ tailscale_servers_oauth_key['key'] }}"
     tailscale_tags:
       - "servers"
     tailscale_oauth_ephemeral: false
     tailscale_oauth_preauthorized: true
+    no_log: false
 ...

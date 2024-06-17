@@ -18,5 +18,6 @@
         api_host: "{{ ansible_facts['vmbr0.7']['ipv4']['address'] }}"
         state: absent
         force: true 
+        timeout: 600
       loop: "{{ vms_to_delete }}"
 ...

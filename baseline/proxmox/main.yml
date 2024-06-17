@@ -8,7 +8,7 @@
 
     - name: Import variables
       include_vars:
-        dir: vars
+        dir: ../../vars
 
     - name: Update apt and install required system packages
       apt:
@@ -27,7 +27,7 @@
       import_tasks: security.yml
 
     - name: Install and bring up tailscale
-      import_tasks: ../tailscale/tailscale.yml
+      import_tasks: ../../services/tailscale/tailscale.yml
     
     - name: Ensure template VMs exist
       include_tasks: deploy_template.yml

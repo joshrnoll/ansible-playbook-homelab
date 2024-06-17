@@ -1,0 +1,88 @@
+---
+- name: Ensure {{ service_name }}'s tailscale serve directory exists
+  ansible.builtin.file:
+    path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config
+    state: directory
+
+- name: Copy tailscale serve config file to server
+  copy:
+    src: "{{ serve_config }}"
+    dest: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/{{ serve_config }}
+    force: true # <-- Set true to force file to be replaced each time
+
+- name: Add port {{ serve_port }} to serve config file
+  lineinfile:
+    backrefs: yes
+    regexp: '^(\s*"Proxy": "http://127\.0\.0\.1:)(\s*)(")'
+    line: '\g<1>{{ serve_port }}\g<3>'
+    path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/serve-config.json
+    state: present
+
+- name: Add https+insecure to serve config file
+  lineinfile:
+    backrefs: yes
+    regexp: '^(\s*)("Proxy": "http://)(127\.0\.0\.1:\d*")$'
+    line: '\g<1>"Proxy": "https+insecure://\g<3>'
+    path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/serve-config.json
+    state: present
+  when: https_container is true
+
+- name: Add funnel option to serve config file
+  blockinfile:
+    path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/serve-config.json
+    insertbefore: '^\}\s*$'
+    marker: ""
+    block: |2
+      ,
+      "AllowFunnel": {
+        "${TS_CERT_DOMAIN}:443": true
+      }
+  when: public is true
+
+# NOTE: The below option for funnel config works, however, keeping the "AllowFunnel" 
+# option anywhere in the serve-config file will cause the Tailscale admin console to reflect the
+# device as using Funnel and being exposed to the internet (even if it isn't)
+# 
+# When tailscale fixes this bug, I will revert to using this lineinfile task rather than the blockinfile task
+#
+# - name: Add funnel option to serve config file
+#   lineinfile:
+#     backrefs: yes
+#     regexp: '^(\s*)("\$\{TS_CERT_DOMAIN\}:443": )'
+#     line: '\g<1>\g<2>true'
+#     path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config/serve-config.json
+#     state: present
+#   when: public is true
+
+- name: Pull image and deploy {{ service_name }}'s tailscale container
+  docker_container:
+    name: ts-{{ service_name }}
+    image: tailscale/tailscale:stable
+    hostname: "{{ service_name }}"
+    restart_policy: unless-stopped
+    state: started
+    env:
+      TS_AUTHKEY: "{{ authkey }}?ephemeral=false"
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_EXTRA_ARGS: --advertise-tags=tag:containers {{ extra_args }}
+      TS_SERVE_CONFIG: /config/{{ serve_config }}
+      TS_USERSPACE: "{{ userspace_networking }}"
+      TS_ACCEPT_DNS: "true"
+    volumes:
+      - /home/{{ ansible_user }}/{{ service_name }}/tailscale:/var/lib/tailscale
+      - /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config:/config
+      - /dev/net/tun:/dev/net/tun
+    capabilities:
+      - net_admin
+      - sys_module
+
+- name: Pull {{ service_name }} image and deploy container
+  docker_container: 
+    name: "{{ service_name }}"
+    image: "{{ container_image }}:{{ container_tag }}"
+    state: started
+    restart_policy: unless-stopped
+    volumes: "{{ container_volumes | default(omit) }}"
+    env: "{{ env_vars | default(omit) }}"
+    network_mode: container:ts-{{ service_name }}
+...

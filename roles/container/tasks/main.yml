@@ -4,7 +4,7 @@
   
 - name: Deploy {{ container_name }}'s tailscale sidecar container
   include_role:
-    name: ../tailscale_sidecar
+    name: ../../roles/tailscale_sidecar # TODO -- Path is not relative to role folder, rather relative to where it is called from. Need to find another way to specify this path.
   vars:
     service_name: "{{ container_name }}"
     authkey: "{{ oauth_key['tailscale'] }}"

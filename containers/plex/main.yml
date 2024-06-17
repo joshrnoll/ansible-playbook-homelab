@@ -1,23 +1,63 @@
 ---
-name: Install plex
-hosts: plex
+- name: Install plex
+  hosts: plex
 
-tasks:
-  - name: Install plex
-    include_role:
-      name: ../../roles/container
-    vars:
-      container_name: plex2
-      container_image: lscr.io/linuxserver/plex
-      container_tag: latest
-      serve_port: 32400
-      userspace_networking: false
-      public: true
-      container_volumes:
-        - /home/{{ ansible_user }}/plex/config:/config
-        - /home/{{ ansible_user }}/media/media:/media
-      env_vars:
-        PUID: "1000"
-        PGID: "999"
-        TZ: "America/New_York"
-        Version: "docker"
+  tasks:
+  
+    - name: Include TrueNAS login info
+      include_vars: secrets.yml
+        
+    - name: Mount media drive from NAS
+      become: true
+      ansible.posix.mount:
+        src: //10.0.30.10/Media
+        path: /home/josh/media
+        opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
+        fstype: cifs
+        state: mounted
+
+    - name: Deploy plex's tailscale sidecar container
+      include_role:
+        name: ../../roles/tailscale_sidecar
+      vars:
+        service_name: plex
+        authkey: "{{ oauth_key['tailscale'] }}"
+        serve_port: 32400
+        userspace_networking: "false"
+        public: yes
+
+    - name: Pull plex image and deploy container
+      docker_container: 
+        name: plex
+        image: lscr.io/linuxserver/plex:arm64v8-latest
+        state: started
+        restart_policy: unless-stopped
+        volumes:
+          - /home/{{ ansible_user }}/plex/config:/config
+          - /home/{{ ansible_user }}/media/media:/media
+        env:
+          PUID: "1000"
+          PGID: "999"
+          TZ: "America/New_York"
+          Version: "docker"
+        network_mode: container:ts-plex
+
+  ### Working config for ts-container role ###
+  # - name: Install plex
+  #   include_role:
+  #     name: ../../roles/container
+  #   vars:
+  #     container_name: plex2
+  #     container_image: lscr.io/linuxserver/plex
+  #     container_tag: latest
+  #     serve_port: 32400
+  #     userspace_networking: false
+  #     public: true
+  #     container_volumes:
+  #       - /home/{{ ansible_user }}/plex/config:/config
+  #       - /home/{{ ansible_user }}/media/media:/media
+  #     env_vars:
+  #       PUID: "1000"
+  #       PGID: "999"
+  #       TZ: "America/New_York"
+  #       Version: "docker"

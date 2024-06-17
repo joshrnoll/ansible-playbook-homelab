@@ -1,6 +1,13 @@
 # A Collection of Ansible Playbooks for my Homelab
 ## Description
 The goal of this repo is to automate the setup and configuration of my homelab. Still a work in progess...
+
+All services are run in docker containers, each tied to a tailscale container for networking. Tailscale handles DNS and reverse proxying via the Tailscale Serve/Funnel feature. 
+
+The containers are hosted on Ubuntu 22.04 VMs in Proxmox. This collection of playbooks primarily supports these VMs and the Proxmox hosts. 
+
+The only notable exception, currently, is pihole which runs directly on an Ubuntu VM with a secondary running directly on a raspberry pi zero w.
+
 ## Usage
 First, cd into the directory where you cloned the repo. Then, create a hosts.ini file
 

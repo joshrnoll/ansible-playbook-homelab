@@ -5,15 +5,15 @@
     state: started
     enabled: yes
 
-- name: Set default zone to 'drop'
-  ansible.builtin.command: firewall-cmd --set-default-zone=drop
+- name: Set default zone to 'FedoraServer'
+  ansible.builtin.command: firewall-cmd --set-default-zone=FedoraServer
   register: default_zone_set
   changed_when:
     - '"ZONE_ALREADY_SET" not in default_zone_set.stderr'
 
 - name: Allow SSH access
   ansible.builtin.firewalld:
-    zone: drop
+    zone: FedoraServer
     service: ssh
     state: enabled
     permanent: yes
