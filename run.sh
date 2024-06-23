@@ -1,25 +1,14 @@
 #!/bin/bash
 
-#### WORK IN PROGRESS #####
+# Prompt for the become password
+read -sp 'BECOME password: ' BECOME_PASS
+echo  # Add a newline for better formatting
 
-# Currently, run baseline/proxmox/main.yml first, then run main.yml
-# This will avoid 'unreachable' errors for VMs that haven't been created yet
+# Prompt for the vault password
+read -sp 'VAULT password: ' VAULT_PASS
+echo  # Add a newline for better formatting
 
-read -sp 'Enter sudo password: ' BECOME_PASS
-echo
-read -sp 'Enter ansible vault password: ' VAULT_PASS
-echo
-
-# expect << EOF
-#     spawn ansible-playbook -i hosts.ini baseline/proxmox/main.yml --ask-vault-pass --ask-become-pass
-#     expect "BECOME password:"
-#     send "$VAULT_PASS\r"
-# EOF
-
-expect << EOF
-    spawn ansible-playbook -i hosts.ini main.yml --ask-vault-pass --ask-become-pass
-    expect "BECOME password: "
-    send "$BECOME_PASS\r"
-    expect "Vault password: "
-    send "$VAULT_PASS\r"
-EOF
+# Run the ansible-playbook command with the passwords passed as extra vars
+ANSIBLE_BECOME_PASS="$BECOME_PASS" ANSIBLE_VAULT_PASS="$VAULT_PASS" \
+ansible-playbook -i hosts.ini baseline/proxmox/main.yml --extra-vars "ansible_become_pass=$BECOME_PASS ansible_vault_password=$VAULT_PASS"
+ansible-playbook -i hosts.ini main.yml --extra-vars "ansible_become_pass=$BECOME_PASS ansible_vault_password=$VAULT_PASS"

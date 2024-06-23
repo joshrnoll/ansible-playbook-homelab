@@ -1,4 +1,4 @@
-- name: Pihole configuration
+- name: Pihole ufw configuration
   hosts: pihole
   user: josh
 
@@ -13,3 +13,4 @@
     loop:
       - "53"
       - "5335"
+      - "80"
