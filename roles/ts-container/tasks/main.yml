@@ -91,10 +91,6 @@
       - sys_module
   when: no_serve is false
 
-- name: Wait for tailscale container to come up
-  ansible.builtin.pause:
-    seconds: 15
-
 - name: Pull image and deploy {{ service_name }}'s tailscale container [NO SERVE CONFIG]
   docker_container:
     name: ts-{{ service_name }}
@@ -117,6 +113,10 @@
       - sys_module
   when: no_serve is true
 
+- name: Wait for tailscale container to come up
+  ansible.builtin.pause:
+    seconds: 15
+
 - name: Pull {{ service_name }} image and deploy container
   docker_container: 
     name: "{{ service_name }}"
@@ -125,6 +125,7 @@
     restart_policy: unless-stopped
     volumes: "{{ container_volumes | default(omit) }}"
     env: "{{ env_vars | default(omit) }}"
+    labels: "{{ container_labels | default(omit) }}"
     command: "{{ container_commands | default(omit) }}"
     network_mode: container:ts-{{ service_name }}
 ...
