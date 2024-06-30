@@ -1,0 +1,36 @@
+---
+- name: Install jellyfin
+  hosts: jellyfin
+
+  tasks:
+  
+    - name: Include variables
+      include_vars: 
+        dir: ../../vars
+        
+    - name: Mount media drive from NAS
+      become: true
+      ansible.posix.mount:
+        src: //10.0.30.10/Media
+        path: /home/josh/media
+        opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
+        fstype: cifs
+        state: mounted
+
+    - name: Install jellyfin
+      include_role:
+        name: ../../roles/ts-container
+      vars:
+        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+        service_name: jellyfin
+        container_image: lscr.io/linuxserver/jellyfin
+        container_tag: arm64v8-10.9.7
+        serve_port: 8096
+        container_volumes:
+          - /home/{{ ansible_user }}/jellyfin/config:/config
+          - /home/{{ ansible_user }}/media/media:/media
+        env_vars:
+          PUID: "1000"
+          PGID: "999"
+          TZ: "America/New_York"
+          Version: "docker"
