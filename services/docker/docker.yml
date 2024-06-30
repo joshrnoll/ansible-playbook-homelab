@@ -146,7 +146,7 @@
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - /home/{{ ansible_user }}:/app/source
-          - /home/{{ ansible_user }}/dockerbackups:/app/destination
+          - /home/{{ ansible_user }}/dockerbackups/{{ ansible_facts['nodename'] }}:/app/destination
         published_ports:
           - 8096:8096/tcp
         env:
