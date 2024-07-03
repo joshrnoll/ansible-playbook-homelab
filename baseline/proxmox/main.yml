@@ -32,6 +32,6 @@
     - name: Ensure template VMs exist
       include_tasks: deploy_template.yml
   
-- name: Create desired VMs
-  import_playbook: create_vms.yml
+# - name: Create desired VMs
+#   import_playbook: create_vms.yml
 ...
