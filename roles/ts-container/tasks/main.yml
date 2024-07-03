@@ -4,7 +4,7 @@
     msg: Both serve_port cannot be defined while no_serve is true
   when: serve_port is defined and no_serve is true
 
-- name: Ensure {{ service_name }}'s tailscale serve directory exists
+- name: Ensure tailscale serve directory exists
   ansible.builtin.file:
     path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config
     state: directory
@@ -90,6 +90,7 @@
       - net_admin
       - sys_module
   when: no_serve is false
+  register: sidecar_serve
 
 - name: Pull image and deploy {{ service_name }}'s tailscale container [NO SERVE CONFIG]
   docker_container:
@@ -112,12 +113,14 @@
       - net_admin
       - sys_module
   when: no_serve is true
+  register: sidecar_noserve
 
 - name: Wait for tailscale container to come up
   ansible.builtin.pause:
     seconds: 15
+  when: sidecar_serve.changed or sidecar_noserve.changed
 
-- name: Pull {{ service_name }} image and deploy container
+- name: Pull {{ service_name }}'s image and deploy container
   docker_container: 
     name: "{{ service_name }}"
     image: "{{ container_image }}:{{ container_tag }}"
