@@ -1,9 +1,11 @@
 ---
+- name: Ensure docker is installed
+  import_playbook: ../../services/docker/docker.yml
+  
 - name: Install Uptime Kuma
-  hosts: uptime-kuma
+  hosts: uptime_kuma
 
   tasks:  
-
     - name: Include variables
       include_vars: 
         dir: ../../vars
@@ -19,6 +21,8 @@
         serve_port: 3001
         userspace_networking: "false"
         public: false
+        container_labels: 
+          nautical-backup.enable: "true"
         container_volumes:
           - /home/{{ ansible_user }}/{{ container_name }}/app:/app/data
 ...

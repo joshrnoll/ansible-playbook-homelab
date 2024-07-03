@@ -1,4 +1,7 @@
 ---
+- name: Ensure docker is installed
+  import_playbook: ../../services/docker/docker.yml
+  
 - name: Install Gitea
   hosts: gitea
 
@@ -24,6 +27,8 @@
           POSTGRES_USER: gitea
           POSTGRES_DB: gitea
         userspace_networking: "false"
+        container_labels: 
+          nautical-backup.enable: "true"
 
     - name: Install Gitea
       include_role:
@@ -47,4 +52,6 @@
           GITEA__database__USER: gitea
           GITEA__database__PASSWD: "{{ GITEA_DB_PASS }}"
         userspace_networking: "false"
+        container_labels: 
+          nautical-backup.enable: "true"
 ...

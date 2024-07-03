@@ -1,26 +1,33 @@
+---
+- name: Ensure docker is installed
+  import_playbook: ../../services/docker/docker.yml
+
 - name: Install and configure VS Code Server
-  hosts: "{{ service_name }}"
-  vars:
-    service_name: code-server
-    service_tag: latest
-    service_image: lscr.io/linuxserver/code-server
+  hosts: code_server
   
   tasks:
-    - name: Deploy tailscale sidecar for VS Code Server
-      include_role:
-        name: ../../roles/tailscale_sidecar
-      vars:
-        serve_port: "8443"
-        authkey: "{{ oauth_key['tailscale'] }}"
+  - name: Include variables
+    include_vars:
+      dir: ../../vars
 
-    - name: Pull image and deploy {{ service_name }} container
-      docker_container:
-        name: "{{ service_name }}"
-        image: "{{ service_image }}:{{ service_tag }}"
-        env:
-          PUID: "1000"
-          PGID: "999"
-          PROXY_DOMAIN: code-server.mink-pirate.ts.net
-        volumes:
-          - ~/{{ service_name }}/config:/config
-        network_mode: container:ts-{{ service_name }}
+  - name: Install code-server
+    include_role:
+      name: ../../roles/ts-container
+    vars:
+      authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+      service_name: code-server
+      container_image: linuxserver/code-server
+      container_tag: "4.90.3"
+      serve_port: 8443
+      container_volumes:
+        - /home/{{ ansible_user }}/{{ service_name }}/config:/config
+      env_vars:
+        PUID: "1000"
+        PGID: "999"
+        PROXY_DOMAIN: code-server.mink-pirate.ts.net
+        TZ: America/New_York
+        PASSWORD: "{{ CODE_SERVER_PASS }}"
+        SUDO_PASSWORD: "{{ CODE_SERVER_PASS }}"
+      container_labels: 
+        nautical-backup.enable: "true"
+...

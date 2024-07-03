@@ -1,4 +1,7 @@
 ---
+- name: Ensure docker is installed
+  import_playbook: ../../services/docker/docker.yml
+  
 - name: Install plex
   hosts: plex
 
@@ -37,3 +40,5 @@
           PGID: "999"
           TZ: "America/New_York"
           Version: "docker"
+        container_labels: 
+          nautical-backup.enable: "true"

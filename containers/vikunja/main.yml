@@ -68,7 +68,7 @@
         service_name: vikunja-app
         container_image: vikunja/vikunja
         container_tag: latest
-        serve_port: 
+        serve_port: 3456
         container_volumes:
           - ~/vikunja/files:/app/vikunja/files
         env_vars:
