@@ -1,0 +1,149 @@
+---
+# Fail if CPU architecture is not x86
+- name: Verify node is x86 architecture
+  fail:
+    msg: This playbook does not support {{ ansible_facts['nodename'] }}'s CPU architecture.
+  when: ansible_facts['machine'] != "x86_64"
+
+- name: Verify docker installation
+  ansible.builtin.shell: docker --version
+  register: docker_installed
+  changed_when: "docker_installed.rc != 0"
+  ignore_errors: true
+
+- block:
+  # Prerequisites
+  - name: Update apt cache and upgrade all packages
+    become: yes
+    apt: 
+      update_cache: true 
+      cache_valid_time: 3600
+      upgrade: safe
+
+  - name: Install dependencies
+    become: yes
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - gnupg
+
+  # DOCKER INSTALLATION
+  - name: Ensure /etc/apt/keyrings exists
+    become: yes
+    file:
+      path: /etc/apt/keyrings
+      state: directory
+      mode: '0775'
+
+  - name: Download signing key for Docker
+    become: yes
+    get_url:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      dest: /etc/apt/keyrings/docker.asc
+
+  - name: Add apt repository for stable version
+    become: yes
+    apt_repository:
+      repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_facts['lsb']['codename'] }} stable"
+      state: present
+      filename: docker
+    register: repo_added
+  
+  - name: Update apt cache 
+    become: yes
+    apt: 
+      update_cache: true 
+    when: repo_added.changed
+  
+  - name: Install Docker
+    become: yes
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+
+  - name: Add user to docker group
+    become: yes
+    user:
+      name: "{{ ansible_user }}"
+      group: docker
+
+  # REQUIRED PACKAGES FOR USING ANSIBLE DOCKER (for portainer installation below)
+  - name: Install related Ubuntu packages
+    become: yes
+    apt:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+        - python3-pip
+        - mc
+
+  - name: Install python packages
+    become: yes
+    pip:
+      name: docker
+
+  when: docker_installed.changed
+
+# Meta task does not support 'when' conditional. Connection will be reset every time.
+- name: Reset connection to allow user changes to take effect
+  meta: reset_connection
+
+- name: Mount backup share from NAS
+  become: true
+  ansible.posix.mount:
+    src: //10.0.30.10/DockerBackups
+    path: /home/josh/dockerbackups
+    opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
+    fstype: cifs
+    state: mounted
+
+# TODO - Currently pulling x86 image -- find a way to pull either x86 or arm64 based on architecture
+- name: Install portainer
+  include_role:
+    name: ../../roles/ts-container
+  vars:
+    authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+    service_name: portainer-{{ ansible_facts['nodename'] }}
+    container_image: portainer/portainer-ce
+    container_tag: latest
+    https_container: true
+    serve_port: 9443
+    userspace_networking: "false"
+    container_volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+- name: Install Nautical-Backup for container volume backups to TrueNAS
+  docker_container:
+    name: nautical-{{ ansible_facts['nodename'] }}
+    image: minituff/nautical-backup
+    state: started
+    restart_policy: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/{{ ansible_user }}:/app/source
+      - /home/{{ ansible_user }}/dockerbackups/{{ ansible_facts['nodename'] }}:/app/destination
+    published_ports:
+      - 8096:8096/tcp
+    env:
+      REQUIRE_LABEL: "true" 
+      CRON_SCHEDULE: "0 1 * * *"
+      TZ: America/New_York
+      BACKUP_ON_START: "true" # <-- Remove when done testing
+...

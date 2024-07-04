@@ -1,0 +1,74 @@
+---
+- name: Add docker repo
+  become: yes
+  ansible.builtin.yum_repository:
+    name: docker-ce
+    baseurl: https://download.docker.com/linux/fedora/docker-ce.repo
+    description: Docker CE Repo
+    state: present
+
+- name: Install docker packages
+  become: yes
+  ansible.builtin.dnf:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+
+- name: Add user to docker group
+  become: yes
+  user:
+    name: "{{ ansible_user }}"
+    group: docker
+
+- name: Reset connection to allow user changes to take effect
+  meta: reset_connection
+
+- name: Mount backup share from NAS
+  become: yes
+  ansible.posix.mount:
+    src: //10.0.30.10/DockerBackups
+    path: /home/josh/dockerbackups
+    opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
+    fstype: cifs
+    state: mounted
+
+# TODO - Currently pulling x86 image -- find a way to pull either x86 or arm64 based on architecture
+- name: Install portainer
+  include_role:
+    name: ../../roles/ts-container
+  vars:
+    authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+    service_name: portainer-{{ ansible_facts['nodename'] }}
+    container_image: portainer/portainer-ce
+    container_tag: latest
+    https_container: true
+    serve_port: 9443
+    userspace_networking: "false"
+    container_volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+- name: Install Nautical-Backup for container volume backups to TrueNAS
+  docker_container:
+    name: nautical-{{ ansible_facts['nodename'] }}
+    image: minituff/nautical-backup
+    state: started
+    restart_policy: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/{{ ansible_user }}:/app/source
+      - /home/{{ ansible_user }}/dockerbackups/{{ ansible_facts['nodename'] }}:/app/destination
+    published_ports:
+      - 8096:8096/tcp
+    env:
+      REQUIRE_LABEL: "true" 
+      CRON_SCHEDULE: "0 1 * * *"
+      TZ: America/New_York
+      BACKUP_ON_START: "true" # <-- Remove when done testing
+...
