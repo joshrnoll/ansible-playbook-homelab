@@ -5,8 +5,11 @@
   when: serve_port is defined and no_serve is true
 
 - name: Ensure tailscale serve directory exists
+  become: yes
   ansible.builtin.file:
     path: /home/{{ ansible_user }}/{{ service_name }}/ts-serve-config
+    owner: "{{ ansible_user }}"
+    group: docker
     state: directory
   when: no_serve is false
 
@@ -126,6 +129,7 @@
     image: "{{ container_image }}:{{ container_tag }}"
     state: started
     restart_policy: unless-stopped
+    user: "{{ container_user | default(omit) }}"
     volumes: "{{ container_volumes | default(omit) }}"
     env: "{{ env_vars | default(omit) }}"
     labels: "{{ container_labels | default(omit) }}"
