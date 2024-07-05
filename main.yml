@@ -3,15 +3,16 @@
   hosts: all
 
 # Items that have been commented out have not been tested yet
-- import_playbook: baseline/proxmox/main.yml
 - import_playbook: baseline/fedora/main.yml
+- import_playbook: baseline/proxmox/main.yml
 - import_playbook: baseline/ubuntu/main.yml
-- import_playbook: services/pihole/pihole.yml
 - import_playbook: containers/code-server/main.yml
 - import_playbook: containers/gitea/main.yml
+- import_playbook: containers/jellyfin/main.yml
 - import_playbook: containers/media/media.yml
-- import_playbook: containers/plex/main.yml
+- import_playbook: containers/ntfy/main.yml
 # - import_playbook: containers/paperless/main.yml
+# - import_playbook: services/pihole/pihole.yml
 - import_playbook: containers/plex/main.yml
 - import_playbook: containers/uptime-kuma/main.yml
 # - import_playbook: containers/vikunja/main.yml
