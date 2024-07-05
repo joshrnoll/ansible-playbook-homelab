@@ -1,0 +1,45 @@
+---
+- name: Ensure docker is installed
+  import_playbook: ../../services/docker/main.yml
+
+- name: Install ntfy
+  hosts: ntfy
+  
+  tasks:
+    - name: Ensure /home/{{ ansible_user }}/ntfy/etc/ntfy exists
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/ntfy/etc/ntfy
+        state: directory
+
+    - name: Copy server.yml to server
+      ansible.builtin.copy:
+        src: server.yml
+        dest: /home/{{ ansible_user }}/ntfy/etc/ntfy/server.yml
+        force: yes
+
+    - name: Add gmail app password to server.yml
+      ansible.builtin.lineinfile:
+        regexp: '^smtp-sender-pass:'
+        line: 'smtp-sender-pass: {{ gmail_app_pass }}'
+        path: /home/{{ ansible_user }}/ntfy/etc/ntfy/server.yml
+        state: present
+    
+    - name: Install ntfy
+      include_role:
+        name: ../../roles/ts-container
+      vars:
+        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+        service_name: ntfy
+        container_image: binwiederhier/ntfy
+        container_tag: latest
+        container_commands: serve
+        serve_port: 80
+        userspace_networking: "false"
+        container_volumes:
+          - /home/{{ ansible_user }}/ntfy/var/cache/ntfy:/var/cache/ntfy
+          - /home/{{ ansible_user }}/ntfy/etc/ntfy:/etc/ntfy
+        env_vars:
+          TZ: "America/New_York"
+        container_labels: 
+          nautical-backup.enable: "true"
+...

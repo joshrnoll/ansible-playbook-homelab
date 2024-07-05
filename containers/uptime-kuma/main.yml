@@ -1,6 +1,6 @@
 ---
 - name: Ensure docker is installed
-  import_playbook: ../../services/docker/docker.yml
+  import_playbook: ../../services/docker/main.yml
   
 - name: Install Uptime Kuma
   hosts: uptime_kuma
