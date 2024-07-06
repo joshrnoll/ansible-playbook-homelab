@@ -1,0 +1,75 @@
+##### Proxmox host baselines #####
+proxmox_hosts:
+  hosts:
+    opti-hst-01:
+    opti-hst-02:
+    opti-hst-03:
+
+##### Used for managing VMs in Proxmox #####
+proxmox_api:
+  hosts:
+    opti-hst-01:
+
+##### Server OS baselines #####
+ubuntu:
+  hosts:
+    media-srv:
+    vm-110-ubuntu:
+    pihole-srv-01:
+    pihole-srv-02:
+
+fedora:
+  hosts:
+    asahi: 
+
+##### Servers with Docker, portainer and nautical-backup
+docker:
+  hosts:
+    media-srv:
+    vm-110-ubuntu:
+    asahi:
+
+##### DNS Services #####
+pihole:
+  hosts:
+    pihole-srv-01:
+    pihole-srv-02:
+
+##### Media Services #####
+media:
+  hosts:
+    media-srv:
+
+plex:
+  hosts:
+    asahi: 
+
+jellyfin:
+  hosts:
+    asahi: 
+
+##### Notification server #####
+ntfy:
+  hosts:
+    vm-110-ubuntu:
+      
+#### All other services #####
+vikunja:
+  hosts:
+    vm-110-ubuntu:
+
+uptime_kuma:
+  hosts:
+    vm-110-ubuntu:
+
+gitea:
+  hosts:
+    vm-110-ubuntu:
+
+code_server:
+  hosts:
+    vm-110-ubuntu:
+
+paperless:
+  hosts:
+    vm-110-ubuntu:
