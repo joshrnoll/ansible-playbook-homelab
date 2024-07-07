@@ -51,6 +51,12 @@
           GITEA__database__NAME: gitea
           GITEA__database__USER: gitea
           GITEA__database__PASSWD: "{{ GITEA_DB_PASS }}"
+          GITEA__mailer__ENABLED: "true" 
+          GITEA__mailer__PROTOCOL: smtp
+          GITEA__mailer__SMTP_PORT: "25"
+          GITA__mailer__SMTP_ADDR: ntfy.mink-pirate.ts.net
+          GITEA__mailer__FROM: noreply@gitea.mink-pirate.ts.net
+          GITEA__mailer__ENVELOPE_FROM: noreply@gitea.mink-pirate.ts.net
         userspace_networking: "false"
         container_labels: 
           nautical-backup.enable: "true"
