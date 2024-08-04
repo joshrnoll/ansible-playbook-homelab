@@ -1,5 +1,5 @@
-# The One-Command-Homelab
-The goal of the **One-Command-Homelab** is to automate the setup and configuration of my homelab by running one command:
+# An Ansible Playbook for Automating my Homelab
+The goal of this playbook is to be a **One-Command-Homelab.** Its purpose in life is to automate the setup and configuration of my homelab by running one command:
 
 ```
 ./run.sh
