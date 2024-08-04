@@ -24,5 +24,8 @@
         container_labels: 
           nautical-backup.enable: "true"
         container_volumes:
-          - /home/{{ ansible_user }}/{{ container_name }}/app:/app/data
+          - /home/{{ ansible_user }}/uptime-kuma/data:/app/data
+        env_vars:
+          PUID: "1000"
+          PGID: "999"
 ...
