@@ -1,0 +1,58 @@
+---
+- name: Ensure docker is installed
+  import_playbook: ../../services/docker/main.yml
+
+- name: Install Calibre and Calibre-Web
+  hosts: calibre
+
+  tasks:
+  
+    - name: Include variables
+      include_vars: 
+        dir: ../../vars
+        
+    - name: Mount media drive from NAS
+      become: true
+      ansible.posix.mount:
+        src: //10.0.30.10/Media
+        path: /home/josh/media
+        opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
+        fstype: cifs
+        state: mounted
+
+    - name: Install calibre
+      include_role:
+        name: ../../roles/ts-container
+      vars:
+        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+        service_name: calibre
+        container_image: lscr.io/linuxserver/calibre
+        container_tag: latest
+        serve_port: 8080
+        container_volumes:
+          - /home/{{ ansible_user }}/calibre/config:/config
+        env_vars:
+          PUID: "1000"
+          PGID: "999"
+          TZ: "America/New_York"
+        container_labels: 
+          nautical-backup.enable: "true"
+    
+    - name: Install calibre-web
+      include_role:
+        name: ../../roles/ts-container
+      vars:
+        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+        service_name: calibre-web
+        container_image: lscr.io/linuxserver/calibre-web
+        container_tag: arm64v8-0.6.22
+        serve_port: 8083
+        container_volumes:
+          - /home/{{ ansible_user }}/calibre-web/config:/config
+          - /home/{{ ansible_user }}/calibre/config/books:/books
+        env_vars:
+          PUID: "1000"
+          PGID: "999"
+          TZ: "America/New_York"
+        container_labels: 
+          nautical-backup.enable: "true"

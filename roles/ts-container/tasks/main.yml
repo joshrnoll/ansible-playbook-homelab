@@ -127,6 +127,7 @@
   docker_container: 
     name: "{{ service_name }}"
     image: "{{ container_image }}:{{ container_tag }}"
+    image_name_mismatch: recreate
     state: started
     restart_policy: unless-stopped
     user: "{{ container_user | default(omit) }}"

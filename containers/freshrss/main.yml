@@ -1,0 +1,33 @@
+---
+- name: Ensure docker is installed
+  import_playbook: ../../services/docker/main.yml
+
+## TODO - Freshrss webui refusing connections  
+- name: Install FreshRSS
+  hosts: freshrss
+
+  tasks:  
+    - name: Include variables
+      include_vars: 
+        dir: ../../vars
+
+    - name: Install FreshRSS
+      include_role:
+        name: ../../roles/ts-container
+      vars:
+        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
+        service_name: fresh-rss
+        container_image: lscr.io/linuxserver/freshrss
+        container_tag: latest
+        serve_port: 80
+        userspace_networking: "false"
+        public: false
+        container_labels: 
+          nautical-backup.enable: "true"
+        container_volumes:
+          - /home/{{ ansible_user }}/fresh-rss/config:/config
+        env_vars:
+          PUID: "1000"
+          PGID: "999"
+          TZ: "America/New_York"
+...
