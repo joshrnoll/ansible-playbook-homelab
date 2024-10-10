@@ -19,7 +19,7 @@ Most of my servers are Ubuntu 22.04 VMs in Proxmox. This playbook currently supp
 
 ### Services Installed
 #### Tailscale
-See [tailscale-info/README.md](tailscale-info/README.md)
+See [***tailscale-info***](https://github.com/joshrnoll/tailscale-info)
 
 #### Docker
 The playbook goes a bit beyond simply installing Docker. It will also deploy [Portainer](https://www.portainer.io/), which provides an intuitive web GUI for managing containers, and [Nautical Backup](https://minituff.github.io/nautical-backup/), a container that automatically backs up all Docker container bind mounts from the host to a mounted SMB share via rsync. 
@@ -27,7 +27,7 @@ The playbook goes a bit beyond simply installing Docker. It will also deploy [Po
 ### Containers Deployed
 All services are run in docker containers, each tied to a tailscale container for networking. This is sometimes referred to as a "sidecar" container, as the tailscale container does not provide any services itself and must have another container connected to it to be useful. 
 
-For more info see [tailscale-info/README.md](tailscale-info/README.md)
+For more info see [***tailscale-info***](https://github.com/joshrnoll/tailscale-info)
 
 # Usage
 Before attempting to use this playbook for your own homelab, ensure that you have read the description above so that you will have an understanding of how it will build containers. 
