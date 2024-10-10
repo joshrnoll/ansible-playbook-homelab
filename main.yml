@@ -4,7 +4,6 @@
 
 # Baseline and VM deployment
 - import_playbook: baseline/main.yml
-- import_playbook: vms/main.yml
 - import_playbook: services/docker/main.yml
 
 # Containers

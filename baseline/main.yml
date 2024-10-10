@@ -1,6 +1,6 @@
 ---
 - name: Initial setup for all servers
-  hosts: ubuntu,fedora,proxmox_hosts
+  hosts: ubuntu,fedora
 
   tasks:
     - name: Import variables
@@ -17,9 +17,4 @@
           - tmux
         server_baseline_fedora_packages:
           - tmux
-        server_baseline_proxmox_packages:
-          - tmux
-
-- name: Ensure template VMs exist on Proxmox
-  ansible.builtin.import_playbook: template_vms.yml
 ...
