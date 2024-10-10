@@ -1,63 +1,51 @@
-vms_to_create:
-  # Uncomment below template and modify with VM info. 
-  # Repeat for additional VMs.
+create_proxmox_vms_list:
+  - name: pihole # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
+    vmid: 100 # VMID of the new VM
+    template: 8239 # VMID of the template to clone
+    memory: 4096 # OPTIONAL - Memory in MB
+    cores: 2 # OPTIONAL - CPU Cores
+    node: opti-hst-02 # Hostname of the node that the VM will be created on
+    ciuser: "{{ ciuser }}" # OPTIONAL - Username to create with Cloud Init
+    cipassword: "{{ cipassword }}" # OPTIONAL - Password to provide with Cloud Init
+    sshkeys: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}" # OPTIONAL - SSH Keys to provide with Cloud Init
+    storage: ceph-pool-01 # Where the VM disk will be stored
+    disk_size: 64G # Size of the VM boot disk
+    vlan: 30 # OPTIONAL - Vlan tag 
+    ip_address: 10.0.30.75/24 # OPTIONAL - IP address to configure with Cloud Init
+    gateway: 10.0.30.1 # OPTIONAL - Gateway to configure with Cloud Init
+    nameservers: # OPTIONAL - Nameservers to configure with Cloud Init
+      - 127.0.0.1
   
-  # - name: <vm name in proxmox> # Name cannot have an UNDERSCORE _
-  #   vmid: <vmid as integer>
-  #   memory: <memory as integer ex. 4096>
-  #   cores: <cores as integer ex. 2>
-  #   node: <node that the vm will be created on> 
-  #   ostype: l26 # Use l26 for any linux VMs
-  #   storage: <storage for vm disk ex. ceph-pool-01>
-  #   vlan: <vlan id as integer ex. 30> # CANNOT BE UPDATED ONCE CREATED!
-  #   ip_address: <IP in slash notation ex. 192.168.0.100/24>
-  #   gateway: <gateway ex. 192.168.0.1>
-  #   nameservers: <nameservers as list ex. below>
-  #     - 1.1.1.1
-  #     - 8.8.8.8
-
-  - name: media-srv # Name cannot have an UNDERSCORE _
-    vmid: 105
-    memory: 16384
-    cores: 4
-    node: opti-hst-01 # The node that the VM will be created on
-    ostype: l26
-    storage: ceph-pool-01
-    disk_size: 207052M
-    vlan: 30 # CANNOT BE UPDATED ONCE CREATED!
-    ip_address: 10.0.30.15/24
-    gateway: 10.0.30.1
-    nameservers:
+  - name: media-srv # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
+    vmid: 105 # VMID of the new VM
+    template: 9809 # VMID of the template to clone
+    memory: 16384 # OPTIONAL - Memory in MB
+    cores: 4 # OPTIONAL - CPU Cores
+    node: opti-hst-01 # Hostname of the node that the VM will be created on
+    ciuser: "{{ ciuser }}" # OPTIONAL - Username to create with Cloud Init
+    cipassword: "{{ cipassword }}" # OPTIONAL - Password to provide with Cloud Init
+    sshkeys: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}" # OPTIONAL - SSH Keys to provide with Cloud Init
+    storage: ceph-pool-01 # Where the VM disk will be stored
+    disk_size: 207052M # Size of the VM boot disk
+    vlan: 30 # OPTIONAL - Vlan tag 
+    ip_address: 10.0.30.15/24 # OPTIONAL - IP address to configure with Cloud Init
+    gateway: 10.0.30.1 # OPTIONAL - Gateway to configure with Cloud Init
+    nameservers: # OPTIONAL - Nameservers to configure with Cloud Init
       - 10.0.30.75
-      - 10.0.10.75
 
-  - name: vm-110-ubuntu # Name cannot have an UNDERSCORE _
-    vmid: 110
-    memory: 16384
-    cores: 4
-    node: opti-hst-03 # The node that the VM will be created on
-    ostype: l26
-    storage: ceph-pool-01
-    disk_size: 100G
-    vlan: 30 # CANNOT BE UPDATED ONCE CREATED!
-    ip_address: 10.0.30.35/24
-    gateway: 10.0.30.1
-    nameservers:
+  - name: vm-110-ubuntu # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
+    vmid: 110 # VMID of the new VM
+    template: 3097 # VMID of the template to clone
+    memory: 16384 # OPTIONAL - Memory in MB
+    cores: 4 # OPTIONAL - CPU Cores
+    node: opti-hst-03 # Hostname of the node that the VM will be created on
+    ciuser: "{{ ciuser }}" # OPTIONAL - Username to create with Cloud Init
+    cipassword: "{{ cipassword }}" # OPTIONAL - Password to provide with Cloud Init
+    sshkeys: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}" # OPTIONAL - SSH Keys to provide with Cloud Init
+    storage: ceph-pool-01 # Where the VM disk will be stored
+    disk_size: 100G # Size of the VM boot disk
+    vlan: 30 # OPTIONAL - Vlan tag 
+    ip_address: 10.0.30.35/24 # OPTIONAL - IP address to configure with Cloud Init
+    gateway: 10.0.30.1 # OPTIONAL - Gateway to configure with Cloud Init
+    nameservers: # OPTIONAL - Nameservers to configure with Cloud Init
       - 10.0.30.75
-      - 10.0.10.75
-
-  - name: vm-115-ubuntu # Name cannot have an UNDERSCORE _
-    vmid: 115
-    memory: 16384
-    cores: 4
-    node: opti-hst-02 # The node that the VM will be created on
-    ostype: l26
-    storage: ceph-pool-01
-    disk_size: 100G
-    vlan: 30 # CANNOT BE UPDATED ONCE CREATED!
-    ip_address: 10.0.30.36/24
-    gateway: 10.0.30.1
-    nameservers:
-      - 10.0.30.75
-      - 10.0.10.75
-

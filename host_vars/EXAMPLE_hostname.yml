@@ -1,0 +1,5 @@
+---
+##### Ensure the file name is the server's hostname with a .yml or .yaml extension #####
+ansible_host: # Local IP Address
+ansible_user: # Admin user with ssh access
+...

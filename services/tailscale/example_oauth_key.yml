@@ -1,9 +1,0 @@
-# Create this file with the command:
-#
-# ansible-vault create --vault-id tailscale_oauth_key@prompt tailscale_oauth_key.yml
-# 
-# Where 'tailscale_oauth_key' is the name of the vault (vault ID) and 'tailscale_oauth_key.yml' is the name of the file (does not have to be the same)
-
-# File contents
-oauth_key:
-  tailscale: tskey-client-<your key string goes here>

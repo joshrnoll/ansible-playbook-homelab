@@ -1,33 +1,30 @@
 ---
-- name: Ensure docker is installed
-  import_playbook: ../../services/docker/main.yml
-
 - name: Install and configure VS Code Server
   hosts: code_server
   
   tasks:
   - name: Include variables
-    include_vars:
-      dir: ../../vars
+    ansible.builtin.include_vars:
+      dir: "{{ playbook_dir }}/vars"
 
   - name: Install code-server
-    include_role:
-      name: ../../roles/ts-container
+    ansible.builtin.include_role:
+      name: joshrnoll.homelab.tailscale_container
     vars:
-      authkey: "{{ tailscale_containers_oauth_key['key'] }}"
-      service_name: code-server
-      container_image: linuxserver/code-server
-      container_tag: "4.90.3"
-      serve_port: 8443
-      container_volumes:
+      tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+      tailscale_container_service_name: code-server
+      tailscale_container_image: linuxserver/code-server
+      tailscale_container_tag: "4.90.3"
+      tailscale_container_serve_port: 8443
+      tailscale_container_volumes:
         - /home/{{ ansible_user }}/{{ service_name }}/config:/config
-      env_vars:
+      tailscale_container_env_vars:
         PUID: "1000"
         PGID: "999"
         PROXY_DOMAIN: code-server.mink-pirate.ts.net
         TZ: America/New_York
         PASSWORD: "{{ CODE_SERVER_PASS }}"
         SUDO_PASSWORD: "{{ CODE_SERVER_PASS }}"
-      container_labels: 
+      tailscale_container_labels: 
         nautical-backup.enable: "true"
 ...

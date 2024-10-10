@@ -1,0 +1,33 @@
+---
+- name: Install Lazy Librarian
+  hosts: lazylibrarian
+
+  tasks:  
+    - name: Include variables
+      ansible.builtin.include_vars: 
+        dir: "{{ playbook_dir }}/vars"
+
+    - name: Install Lazy Librarian 
+      ansible.builtin.include_role:   
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_service_name: lazylibrarian
+        tailscale_container_image: lscr.io/linuxserver/lazylibrarian
+        tailscale_container_tag: latest
+        tailscale_container_serve_port: 5299
+        tailscale_container_pull_image: always
+        tailscale_container_public: false
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_extra_args: --exit-node=100.82.221.88
+        tailscale_container_labels: 
+          nautical-backup.enable: "true"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/lazylibrarian/config:/config
+          - /home/{{ ansible_user }}/media:/data
+        tailscale_container_env_vars:
+          PUID: "1000"
+          PGID: "999"
+          TZ: "America/New_York"
+          DOCKER_MODS: "linuxserver/mods:universal-calibre|linuxserver/mods:lazylibrarian-ffmpeg"
+...

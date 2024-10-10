@@ -15,7 +15,8 @@ Configurations made by this playbook for Proxmox host machines
 | Create Ceph pool and OSDs for shared VM storage| ❌ |
 | Create cluster and add hosts to cluster | ❌ |
 | Create cloud-init VM template | ✅ |
-| Create desired VMs on Proxmox Cluster | ✅
+| Create desired VMs on Proxmox Cluster | ✅ |
+
 #### Ubuntu Servers
 Configurations made by this playbook for Ubuntu servers (VMs or bare metal)
 | Feature | Status |
@@ -37,18 +38,18 @@ Services installed by this playbook.
 | Service | Description | Status |
 | --- | --- | --- |
 | [Tailscale](https://tailscale.com/) | Install and bring up tailscale, tagged as "server" | ✅ |
-| [Docker](https://www.docker.com/) | Install docker and deploy portainer and nautical-backup for container volumes | ✅ |
+| [Docker](https://www.docker.com/) | Install docker and deploy [portainer](https://portainer.io) and [nautical-backup](https://minituff.github.io/nautical-backup/) for container volumes | ✅ |
 | [PiHole](https://pi-hole.net/) | Install and configure PiHole and Gravity Sync | ❌ |
 #### Containers
-Containers deployed by this playbook
+Containers deployed by this playbook, tagged in Tailscale as "container"
 | Container | Status |
 | --- | --- |
 | [VS Code Server](https://code.visualstudio.com/docs/remote/vscode-server) | ✅ |
 | [Gitea](https://about.gitea.com/) | ✅ |
 | [Jellyfin](https://jellyfin.org/) | ✅ |
 | [Ntfy](https://ntfy.sh) | ✅ |
-| [Paperless-NGX](https://docs.paperless-ngx.com/) | ✅ |
+| [Paperless-NGX](https://docs.paperless-ngx.com/) | 🚧 |
 | [Plex](https://plex.tv) | ✅ |
 | [Uptime Kuma](https://uptime.kuma.pet/) | ✅ |
-| [Vikunja](https://vikunja.io/) | ✅ |
+| [Vikunja](https://vikunja.io/) | 🚧 |
 

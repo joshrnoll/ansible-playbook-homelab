@@ -1,15 +1,11 @@
 ---
-- name: Ensure docker is installed
-  import_playbook: ../../services/docker/main.yml
-  
 - name: Install plex
   hosts: plex
 
   tasks:
-  
     - name: Include variables
-      include_vars: 
-        dir: ../../vars
+      ansible.builtin.include_vars: 
+        dir: "{{ playbook_dir }}/vars"
         
     - name: Mount media drive from NAS
       become: true
@@ -21,24 +17,24 @@
         state: mounted
 
     - name: Install plex
-      include_role:
-        name: ../../roles/ts-container
+      ansible.builtin.include_role:
+        name: "{{ playbook_dir }}/vars"
       vars:
-        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
-        service_name: plex
-        container_image: lscr.io/linuxserver/plex
-        container_tag: arm64v8-latest
-        https_container: true
-        serve_port: 32400
-        userspace_networking: "false"
-        public: true
-        container_volumes:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_service_name: plex
+        tailscale_container_image: lscr.io/linuxserver/plex
+        tailscale_container_tag: arm64v8-latest
+        tailscale_container_https_container: true
+        tailscale_container_serve_port: 32400
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_public: true
+        tailscale_container_volumes:
           - /home/{{ ansible_user }}/plex/config:/config
           - /home/{{ ansible_user }}/media/media:/media
-        env_vars:
+        tailscale_container_env_vars:
           PUID: "1000"
           PGID: "999"
           TZ: "America/New_York"
           Version: "docker"
-        container_labels: 
+        tailscale_container_labels: 
           nautical-backup.enable: "true"

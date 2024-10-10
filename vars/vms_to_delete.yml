@@ -1,6 +1,0 @@
-vms_to_delete:
-  - vmid: #VMID OF VM TO DELETE
-  - vmid: #VMID OF VM TO DELETE
-  - vmid: #VMID OF VM TO DELETE
-
-  # Enter as many as necessary -- playbook will skip any that don't exist

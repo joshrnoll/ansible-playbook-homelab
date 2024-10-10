@@ -1,19 +1,18 @@
----
-- name: Install docker
+- name: Install Docker, Portainer, and Nautical Backup
   hosts: docker
 
-# TODO - Add support for ARM64 architecture. Currently, these tasks will only work on x86 architecture.
-
   tasks:
-  - name: Include variables
-    include_vars:
-      dir: ../../vars
+    - name: Include variables
+      ansible.builtin.include_vars:
+        dir: "{{ playbook_dir }}/vars"
 
-  - name: Docker install for Ubuntu
-    include_tasks: ubuntu.yml
-    when: ansible_facts['distribution'] == "Ubuntu"
-
-  - name: Docker install for Fedora
-    include_tasks: fedora.yml
-    when: ansible_facts['distribution'] == "Fedora"
-...
+    - name: Run Docker setup role
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.docker_setup
+      vars:
+        docker_setup_tailscale_oauth_client_secret: "{{ tailscale_conatiners_oauth_client['secret'] }}"
+        docker_setup_nas_ip_or_hostname: truenas.mink-pirate.ts.net
+        docker_setup_share_name: DockerBackups
+        docker_setup_mount_path: /home/{{ ansible_user }}/dockerbackups
+        docker_setup_share_username: "{{ truenas_username }}"
+        docker_setup_share_password: "{{ truenas_password }}"

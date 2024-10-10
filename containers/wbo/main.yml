@@ -1,27 +1,23 @@
 ---
-- name: Ensure docker is installed
-  import_playbook: ../../services/docker/main.yml
-  
 - name: Install WBO
   hosts: wbo
 
   tasks:
-    
     - name: Include variables
-      include_vars: 
-        dir: ../../vars
+      ansible.builtin.include_vars: 
+        dir: "{{ playbook_dir }}/vars"
 
     - name: Install WBO
-      include_role:
-        name: ../../roles/ts-container
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
       vars:
-        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
-        service_name: wbo
-        container_image: lovasoa/wbo
-        container_tag: v1.20.1
-        serve_port: 80
-        container_volumes:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_service_name: wbo
+        tailscale_container_image: lovasoa/wbo
+        tailscale_container_tag: v1.20.1
+        tailscale_container_serve_port: 80
+        tailscale_container_volumes:
           - /home/{{ ansible_user }}/wbo/whiteboards:/opt/app/server-data
-        container_labels: 
+        tailscale_container_labels: 
           nautical-backup.enable: "true"
 ...

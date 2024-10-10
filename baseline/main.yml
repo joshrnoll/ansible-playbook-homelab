@@ -1,0 +1,25 @@
+---
+- name: Initial setup for all servers
+  hosts: ubuntu,fedora,proxmox_hosts
+
+  tasks:
+    - name: Import variables
+      ansible.builtin.include_vars:
+        dir: "{{ playbook_dir }}/vars"
+
+    - name: Run server baseline role
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.server_baseline
+      vars:
+        server_baseline_created_username: josh
+        server_baseline_tailscale_oauth_client_secret: "{{ tailscale_servers_oauth_key['key'] }}"
+        server_baseline_ubuntu_packages:
+          - tmux
+        server_baseline_fedora_packages:
+          - tmux
+        server_baseline_proxmox_packages:
+          - tmux
+
+- name: Ensure template VMs exist on Proxmox
+  ansible.builtin.import_playbook: template_vms.yml
+...

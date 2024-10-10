@@ -1,11 +1,12 @@
 ---
-- name: Ensure docker is installed
-  import_playbook: ../../services/docker/main.yml
-
 - name: Install ntfy
   hosts: ntfy
   
   tasks:
+    - name: Include variables
+      ansible.builtin.include_vars: 
+        dir: "{{ playbook_dir }}/vars"
+
     - name: Ensure /home/{{ ansible_user }}/ntfy/etc/ntfy exists
       ansible.builtin.file:
         path: /home/{{ ansible_user }}/ntfy/etc/ntfy
@@ -25,21 +26,21 @@
         state: present
     
     - name: Install ntfy
-      include_role:
-        name: ../../roles/ts-container
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
       vars:
-        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
-        service_name: ntfy
-        container_image: binwiederhier/ntfy
-        container_tag: latest
-        container_commands: serve
-        serve_port: 80
-        userspace_networking: "false"
-        container_volumes:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_service_name: ntfy
+        tailscale_container_image: binwiederhier/ntfy
+        tailscale_container_tag: latest
+        tailscale_container_commands: serve
+        tailscale_container_serve_port: 80
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
           - /home/{{ ansible_user }}/ntfy/var/cache/ntfy:/var/cache/ntfy
           - /home/{{ ansible_user }}/ntfy/etc/ntfy:/etc/ntfy
-        env_vars:
+        tailscale_container_env_vars:
           TZ: "America/New_York"
-        container_labels: 
+        tailscale_container_labels: 
           nautical-backup.enable: "true"
 ...

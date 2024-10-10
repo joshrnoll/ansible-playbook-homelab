@@ -1,15 +1,11 @@
 ---
-- name: Ensure docker is installed
-  import_playbook: ../../services/docker/main.yml
-
 - name: Install Calibre and Calibre-Web
   hosts: calibre
 
   tasks:
-  
     - name: Include variables
-      include_vars: 
-        dir: ../../vars
+      ansible.builtin.include_vars: 
+        dir: "{{ playbook_dir }}/vars"
         
     - name: Mount media drive from NAS
       become: true
@@ -21,38 +17,38 @@
         state: mounted
 
     - name: Install calibre
-      include_role:
-        name: ../../roles/ts-container
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
       vars:
-        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
-        service_name: calibre
-        container_image: lscr.io/linuxserver/calibre
-        container_tag: latest
-        serve_port: 8080
-        container_volumes:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_service_name: calibre
+        tailscale_container_image: lscr.io/linuxserver/calibre
+        tailscale_container_tag: latest
+        tailscale_container_serve_port: 8080
+        tailscale_container_volumes:
           - /home/{{ ansible_user }}/calibre/config:/config
-        env_vars:
+        tailscale_container_env_vars:
           PUID: "1000"
           PGID: "999"
           TZ: "America/New_York"
-        container_labels: 
+        tailscale_container_labels: 
           nautical-backup.enable: "true"
     
     - name: Install calibre-web
-      include_role:
-        name: ../../roles/ts-container
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
       vars:
-        authkey: "{{ tailscale_containers_oauth_key['key'] }}"
-        service_name: calibre-web
-        container_image: lscr.io/linuxserver/calibre-web
-        container_tag: arm64v8-0.6.22
-        serve_port: 8083
-        container_volumes:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_service_name: calibre-web
+        tailscale_container_image: lscr.io/linuxserver/calibre-web
+        tailscale_container_tag: arm64v8-0.6.22
+        tailscale_container_serve_port: 8083
+        tailscale_container_volumes:
           - /home/{{ ansible_user }}/calibre-web/config:/config
           - /home/{{ ansible_user }}/calibre/config/books:/books
-        env_vars:
+        tailscale_container_env_vars:
           PUID: "1000"
           PGID: "999"
           TZ: "America/New_York"
-        container_labels: 
+        tailscale_container_labels: 
           nautical-backup.enable: "true"
