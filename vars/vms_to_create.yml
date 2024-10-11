@@ -8,7 +8,7 @@ create_proxmox_vms_list:
     node: opti-hst-02  # Hostname of the node that the VM will be created on
     ciuser: "{{ ciuser }}"  # OPTIONAL - Username to create with Cloud Init
     cipassword: "{{ cipassword }}"  # OPTIONAL - Password to provide with Cloud Init
-    sshkeys: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
+    sshkeys: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
     storage: ceph-pool-01  # Where the VM disk will be stored
     disk_size: 64G  # Size of the VM boot disk
     vlan: 30  # OPTIONAL - Vlan tag
@@ -25,7 +25,7 @@ create_proxmox_vms_list:
     node: opti-hst-01  # Hostname of the node that the VM will be created on
     ciuser: "{{ ciuser }}"  # OPTIONAL - Username to create with Cloud Init
     cipassword: "{{ cipassword }}"  # OPTIONAL - Password to provide with Cloud Init
-    sshkeys: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
+    sshkeys: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
     storage: ceph-pool-01  # Where the VM disk will be stored
     disk_size: 207052M  # Size of the VM boot disk
     vlan: 30  # OPTIONAL - Vlan tag
@@ -42,7 +42,7 @@ create_proxmox_vms_list:
     node: opti-hst-03  # Hostname of the node that the VM will be created on
     ciuser: "{{ ciuser }}"  # OPTIONAL - Username to create with Cloud Init
     cipassword: "{{ cipassword }}"  # OPTIONAL - Password to provide with Cloud Init
-    sshkeys: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
+    sshkeys: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
     storage: ceph-pool-01  # Where the VM disk will be stored
     disk_size: 100G  # Size of the VM boot disk
     vlan: 30  # OPTIONAL - Vlan tag

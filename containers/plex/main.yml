@@ -18,7 +18,7 @@
 
     - name: Install plex
       ansible.builtin.include_role:
-        name: "{{ playbook_dir }}/vars"
+        name: joshrnoll.homelab.tailscale_container
       vars:
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
         tailscale_container_service_name: plex

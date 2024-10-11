@@ -1,18 +1,15 @@
 ---
-- name: Ensure docker is installed
-  import_playbook: ../../services/docker/main.yml
-
-- name:  # Enter playbook name. Example -- Install Uptime Kuma
-  hosts:  # Host group to deploy to. Example -- uptime_kuma
+- name: TEMPLATE  # Enter playbook name. Example -- Install Uptime Kuma
+  hosts: hosts_group_here  # Host group to deploy to. Example -- uptime_kuma
 
   tasks:
     - name: Include variables
-      include_vars:
-        dir: ../../vars
+      ansible.builtin.include_vars:
+        dir: "{{ playbook_dir }}/vars"
 
-    - name:  # Enter task name. Example -- Pull image and deploy Uptime Kuma
-      include_role:
-        name: ../../roles/ts-container
+    - name: TEMPLATE # Enter task name. Example -- Pull image and deploy Uptime Kuma
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
       vars:
         no_serve: false  # Change to true if you do not want to use the Tailscale Serve feature
         https_container: false  # Change to true if the container uses HTTPS with a self-signed cert
