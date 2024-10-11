@@ -17,5 +17,3 @@
 - import_playbook: containers/plex/main.yml
 - import_playbook: containers/uptime-kuma/main.yml
 ...
-
-

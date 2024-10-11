@@ -4,7 +4,7 @@
 
   tasks:
     - name: Include variables
-      ansible.builtin.include_vars: 
+      ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/vars"
 
     - name: Install WBO
@@ -18,6 +18,6 @@
         tailscale_container_serve_port: 80
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/wbo/whiteboards:/opt/app/server-data
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
 ...

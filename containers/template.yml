@@ -1,36 +1,36 @@
 ---
 - name: Ensure docker is installed
   import_playbook: ../../services/docker/main.yml
-  
-- name: # Enter playbook name. Example -- Install Uptime Kuma
-  hosts: # Host group to deploy to. Example -- uptime_kuma
 
-  tasks:  
+- name:  # Enter playbook name. Example -- Install Uptime Kuma
+  hosts:  # Host group to deploy to. Example -- uptime_kuma
+
+  tasks:
     - name: Include variables
-      include_vars: 
+      include_vars:
         dir: ../../vars
 
-    - name: # Enter task name. Example -- Pull image and deploy Uptime Kuma 
+    - name:  # Enter task name. Example -- Pull image and deploy Uptime Kuma
       include_role:
         name: ../../roles/ts-container
       vars:
-        no_serve: false # Change to true if you do not want to use the Tailscale Serve feature
-        https_container: false # Change to true if the container uses HTTPS with a self-signed cert
-        public: false # Change to true if you want to expose the container to the internet with the Tailscale Funnel feature
-        serve_config: serve-config.json # Leave this default unless you have a custom serve config file
-        extra_args: "" # Default is empty string. Add any additional arguments that you want added to the tailscale up command
-        authkey: "{{ tailscale_containers_oauth_key['key'] }}" # Path to your authkey / Oauth Client secret
-        service_name: uptime-kuma # This name will be used for the node name in tailscale, as well as the bind mount folder's on the host
-        container_image: louislam/uptime-kuma # Same as you would pass to docker commands or docker compose
-        container_tag: latest # The default is latest but it is recommended to use a specific tag to avoid un-forseen image updates breaking your container
-        serve_port: 3001 # The port that the Tailscale Serve feature will forward
-        userspace_networking: "false" # https://tailscale.com/kb/1112/userspace-networking
-        container_labels: # Add any desired container lables below. Omit this line if not needed.
-          nautical-backup.enable: "true" # Label required for the container to be included by nautical-backup
-        container_volumes: # Add all container volumes below. Omit this line if not needed.
+        no_serve: false  # Change to true if you do not want to use the Tailscale Serve feature
+        https_container: false  # Change to true if the container uses HTTPS with a self-signed cert
+        public: false  # Change to true if you want to expose the container to the internet with the Tailscale Funnel feature
+        serve_config: serve-config.json  # Leave this default unless you have a custom serve config file
+        extra_args: ""  # Default is empty string. Add any additional arguments that you want added to the tailscale up command
+        authkey: "{{ tailscale_containers_oauth_key['key'] }}"  # Path to your authkey / Oauth Client secret
+        service_name: uptime-kuma  # This name will be used for the node name in tailscale, as well as the bind mount folder's on the host
+        container_image: louislam/uptime-kuma  # Same as you would pass to docker commands or docker compose
+        container_tag: latest  # The default is latest but it is recommended to use a specific tag to avoid un-forseen image updates breaking your container
+        serve_port: 3001  # The port that the Tailscale Serve feature will forward
+        userspace_networking: "false"  # https://tailscale.com/kb/1112/userspace-networking
+        container_labels:  # Add any desired container lables below. Omit this line if not needed.
+          nautical-backup.enable: "true"  # Label required for the container to be included by nautical-backup
+        container_volumes:  # Add all container volumes below. Omit this line if not needed.
           - /home/{{ ansible_user }}/uptime-kuma/data:/app/data
-        env_vars: # Add any environment variables here. Omit this line if not needed.
+        env_vars:  # Add any environment variables here. Omit this line if not needed.
           PUID: "1000"
           PGID: "999"
-        container_commands: # Add any commands that need to be passed to the container. Omit this line if not needed.
+        container_commands:  # Add any commands that need to be passed to the container. Omit this line if not needed.
 ...

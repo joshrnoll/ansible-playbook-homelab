@@ -1,3 +1,4 @@
+---
 ##### Proxmox host baselines #####
 proxmox_hosts:
   hosts:
@@ -20,7 +21,7 @@ ubuntu:
 
 fedora:
   hosts:
-    asahi: 
+    asahi:
 
 ##### Servers with Docker, portainer and nautical-backup
 docker:
@@ -42,17 +43,17 @@ media:
 
 plex:
   hosts:
-    asahi: 
+    asahi:
 
 jellyfin:
   hosts:
-    asahi: 
+    asahi:
 
 ##### Notification server #####
 ntfy:
   hosts:
     vm-110-ubuntu:
-      
+
 #### All other services #####
 vikunja:
   hosts:

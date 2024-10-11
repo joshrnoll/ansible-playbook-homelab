@@ -1,13 +1,13 @@
 ---
 - name: Ensure docker is installed
   import_playbook: ../../services/docker/main.yml
-  
+
 - name: Install Gitea
   hosts: gitea
 
   tasks:
     - name: Include variables
-      ansible.builtin.include_vars: 
+      ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/vars"
 
     - name: Install Gitea
@@ -27,12 +27,12 @@
           USER_UID: "1000"
           USER_GID: "999"
           GITEA__DEFAULT__APP_NAME: "Josh Noll's Gitea"
-          GITEA__mailer__ENABLED: "true" 
+          GITEA__mailer__ENABLED: "true"
           GITEA__mailer__PROTOCOL: smtp
           GITEA__mailer__SMTP_PORT: "25"
           GITA__mailer__SMTP_ADDR: ntfy.mink-pirate.ts.net
           GITEA__mailer__FROM: noreply@gitea.mink-pirate.ts.net
           GITEA__mailer__ENVELOPE_FROM: noreply@gitea.mink-pirate.ts.net
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
 ...

@@ -1,11 +1,11 @@
 ---
-## TODO - Freshrss webui refusing connections  
+## TODO - Freshrss webui refusing connections
 - name: Install FreshRSS
   hosts: freshrss
 
-  tasks:  
+  tasks:
     - name: Include variables
-      ansible.builtin.include_vars: 
+      ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/vars"
 
     - name: Install FreshRSS
@@ -19,7 +19,7 @@
         tailscale_container_serve_port: 80
         tailscale_container_userspace_networking: "false"
         tailscale_container_public: false
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/fresh-rss/config:/config

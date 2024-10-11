@@ -1,54 +1,55 @@
+---
 - name: Install Calibre-Web Automated
   hosts: cwa
 
   tasks:
-  - name: Include variables
-    ansible.builtin.include_vars:
-      dir: "{{ playbook_dir }}/vars"
+    - name: Include variables
+      ansible.builtin.include_vars:
+        dir: "{{ playbook_dir }}/vars"
 
-  - name: Mount book folder from NAS
-    become: true
-    ansible.posix.mount:
-      src: //10.0.30.10/Media/media/books
-      path: /home/{{ ansible_user }}/cwa/books
-      opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
-      fstype: cifs
-      state: mounted
+    - name: Mount book folder from NAS
+      become: true
+      ansible.posix.mount:
+        src: //10.0.30.10/Media/media/books
+        path: /home/{{ ansible_user }}/cwa/books
+        opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
+        fstype: cifs
+        state: mounted
 
-  - name: Copy booksync script to server
-    ansible.builtin.copy:
-      src: booksync.sh
-      dest: /home/{{ ansible_user }}/cwa/booksync.sh
-      owner: "{{ ansible_user }}"
-      group: docker
-      mode: '0755'
+    - name: Copy booksync script to server
+      ansible.builtin.copy:
+        src: booksync.sh
+        dest: /home/{{ ansible_user }}/cwa/booksync.sh
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: '0755'
 
-  - name: Enable cron job to sync books to ingest folder
-    ansible.builtin.cron:
-      name: "cwa booksync"
-      minute: "0"
-      hour: "8,16"
-      job: "/home/{{ ansible_user }}/cwa/booksync.sh"
+    - name: Enable cron job to sync books to ingest folder
+      ansible.builtin.cron:
+        name: "cwa booksync"
+        minute: "0"
+        hour: "8,16"
+        job: "/home/{{ ansible_user }}/cwa/booksync.sh"
 
-  - name: Install Calibre-Web Automated
-    ansible.builtin.include_role:
-      name: joshrnoll.homelab.tailscale_container
-    vars:
-      tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
-      tailscale_container_service_name: cwa
-      tailscale_container_image: crocodilestick/calibre-web-automated
-      tailscale_container_tag: latest
-      tailscale_container_serve_port: 8083
-      tailscale_container_volumes:
-        - /home/{{ ansible_user }}/{{ service_name }}/config:/config
-        - /home/{{ ansible_user }}/{{ service_name }}/book-ingest:/cwa-book-ingest
-        - /home/{{ ansible_user }}/{{ service_name }}/library:/calibre-library
-        # - /home/{{ ansible_user }}/{{ service_name }}/books:/books # Optional
-      tailscale_container_env_vars:
-        PUID: "1000"
-        PGID: "999"
-        TZ: "America/New_York"
-        DOCKER_MODS: "linuxserver/mods:universal-calibre"
-      tailscale_container_labels: 
-        nautical-backup.enable: "true"
+    - name: Install Calibre-Web Automated
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_service_name: cwa
+        tailscale_container_image: crocodilestick/calibre-web-automated
+        tailscale_container_tag: latest
+        tailscale_container_serve_port: 8083
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/{{ service_name }}/config:/config
+          - /home/{{ ansible_user }}/{{ service_name }}/book-ingest:/cwa-book-ingest
+          - /home/{{ ansible_user }}/{{ service_name }}/library:/calibre-library
+          # - /home/{{ ansible_user }}/{{ service_name }}/books:/books # Optional
+        tailscale_container_env_vars:
+          PUID: "1000"
+          PGID: "999"
+          TZ: "America/New_York"
+          DOCKER_MODS: "linuxserver/mods:universal-calibre"
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
 ...

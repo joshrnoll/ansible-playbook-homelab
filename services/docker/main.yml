@@ -1,3 +1,4 @@
+---
 - name: Install Docker, Portainer, and Nautical Backup
   hosts: docker
 
@@ -16,3 +17,4 @@
         docker_setup_mount_path: /home/{{ ansible_user }}/dockerbackups
         docker_setup_share_username: "{{ truenas_username }}"
         docker_setup_share_password: "{{ truenas_password }}"
+...

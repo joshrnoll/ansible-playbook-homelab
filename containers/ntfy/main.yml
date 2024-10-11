@@ -1,10 +1,10 @@
 ---
 - name: Install ntfy
   hosts: ntfy
-  
+
   tasks:
     - name: Include variables
-      ansible.builtin.include_vars: 
+      ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/vars"
 
     - name: Ensure /home/{{ ansible_user }}/ntfy/etc/ntfy exists
@@ -16,7 +16,7 @@
       ansible.builtin.copy:
         src: server.yml
         dest: /home/{{ ansible_user }}/ntfy/etc/ntfy/server.yml
-        force: yes
+        force: true
 
     - name: Add gmail app password to server.yml
       ansible.builtin.lineinfile:
@@ -24,7 +24,7 @@
         line: 'smtp-sender-pass: {{ gmail_app_pass }}'
         path: /home/{{ ansible_user }}/ntfy/etc/ntfy/server.yml
         state: present
-    
+
     - name: Install ntfy
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
@@ -41,6 +41,6 @@
           - /home/{{ ansible_user }}/ntfy/etc/ntfy:/etc/ntfy
         tailscale_container_env_vars:
           TZ: "America/New_York"
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
 ...

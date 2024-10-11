@@ -4,9 +4,9 @@
 
   tasks:
     - name: Include variables
-      ansible.builtin.include_vars: 
+      ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/vars"
-        
+
     - name: Mount media drive from NAS
       become: true
       ansible.posix.mount:
@@ -36,5 +36,6 @@
           PGID: "999"
           TZ: "America/New_York"
           Version: "docker"
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
+...

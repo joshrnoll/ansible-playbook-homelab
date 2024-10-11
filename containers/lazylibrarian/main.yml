@@ -2,13 +2,13 @@
 - name: Install Lazy Librarian
   hosts: lazylibrarian
 
-  tasks:  
+  tasks:
     - name: Include variables
-      ansible.builtin.include_vars: 
+      ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/vars"
 
-    - name: Install Lazy Librarian 
-      ansible.builtin.include_role:   
+    - name: Install Lazy Librarian
+      ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
@@ -20,7 +20,7 @@
         tailscale_container_public: false
         tailscale_container_userspace_networking: "false"
         tailscale_container_extra_args: --exit-node=100.82.221.88
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/lazylibrarian/config:/config

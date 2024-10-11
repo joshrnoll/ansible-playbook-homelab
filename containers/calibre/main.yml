@@ -4,9 +4,9 @@
 
   tasks:
     - name: Include variables
-      ansible.builtin.include_vars: 
+      ansible.builtin.include_vars:
         dir: "{{ playbook_dir }}/vars"
-        
+
     - name: Mount media drive from NAS
       become: true
       ansible.posix.mount:
@@ -31,9 +31,9 @@
           PUID: "1000"
           PGID: "999"
           TZ: "America/New_York"
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
-    
+
     - name: Install calibre-web
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
@@ -50,5 +50,6 @@
           PUID: "1000"
           PGID: "999"
           TZ: "America/New_York"
-        tailscale_container_labels: 
+        tailscale_container_labels:
           nautical-backup.enable: "true"
+...
