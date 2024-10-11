@@ -12,11 +12,19 @@ read -sp 'VAULT password: ' VAULT_PASS
 # new line for formatting
 echo  
 
-# Set password variables
-ANSIBLE_BECOME_PASS="$BECOME_PASS" ANSIBLE_VAULT_PASS="$VAULT_PASS" \
+# Create a temporary file for the vault password
+VAULT_PASS_FILE=$(mktemp)
+echo "$VAULT_PASS" > "$VAULT_PASS_FILE"
+
+# Ensure the temporary file is deleted after script execution
+trap 'rm -f "$VAULT_PASS_FILE"' EXIT
 
 # Call playbook for Proxmox setup and VM creation
-ansible-playbook -i production.yml baseline/proxmox/main.yml --extra-vars "ansible_become_pass=$BECOME_PASS ansible_vault_password=$VAULT_PASS"
+ansible-playbook -i production.yml baseline/proxmox/main.yml \
+--extra-vars "ansible_become_pass=$BECOME_PASS vars_dir_path=$PWD" \
+--vault-password-file "$VAULT_PASS_FILE"
 
 # Call main.yml for homelab configuration
-ansible-playbook -i production.yml main.yml --extra-vars "ansible_become_pass=$BECOME_PASS ansible_vault_password=$VAULT_PASS"
+ansible-playbook -i production.yml main.yml \
+--extra-vars "ansible_become_pass=$BECOME_PASS vars_dir_path=$PWD" \
+--vault-password-file "$VAULT_PASS_FILE"

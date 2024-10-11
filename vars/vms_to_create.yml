@@ -1,5 +1,5 @@
 ---
-create_proxmox_vms_list:
+vms_to_create:
   - name: pihole  # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
     vmid: 100  # VMID of the new VM
     template: 8239  # VMID of the template to clone

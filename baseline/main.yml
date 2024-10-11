@@ -5,7 +5,7 @@
   tasks:
     - name: Import variables
       ansible.builtin.include_vars:
-        dir: "{{ playbook_dir }}/vars"
+        dir: "{{ vars_dir_path }}/vars"
 
     - name: Run server baseline role
       ansible.builtin.include_role:

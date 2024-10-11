@@ -5,7 +5,7 @@
   tasks:
     - name: Import variables
       ansible.builtin.include_vars:
-        dir: "{{ playbook_dir }}/vars"
+        dir: "{{ vars_dir_path }}/vars"
 
     - name: Proxmox baseline
       ansible.builtin.include_role:
@@ -63,5 +63,5 @@
         create_proxmox_vms_proxmox_api_token_secret: "{{ proxmox_api_token_secret }}"
 
         # VMs to be created
-        create_proxmox_vms_list: "{{ create_proxmox_vms_list }}"
+        create_proxmox_vms_list: "{{ vms_to_create }}"
 ...
