@@ -16,7 +16,7 @@
         public: false  # Change to true if you want to expose the container to the internet with the Tailscale Funnel feature
         serve_config: serve-config.json  # Leave this default unless you have a custom serve config file
         extra_args: ""  # Default is empty string. Add any additional arguments that you want added to the tailscale up command
-        authkey: "{{ tailscale_containers_oauth_key['key'] }}"  # Path to your authkey / Oauth Client secret
+        authkey: "{{ tailscale_containers_oauth_client['secret'] }}"  # Path to your authkey / Oauth Client secret
         service_name: uptime-kuma  # This name will be used for the node name in tailscale, as well as the bind mount folder's on the host
         container_image: louislam/uptime-kuma  # Same as you would pass to docker commands or docker compose
         container_tag: latest  # The default is latest but it is recommended to use a specific tag to avoid un-forseen image updates breaking your container

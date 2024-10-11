@@ -12,7 +12,7 @@
         name: joshrnoll.homelab.server_baseline
       vars:
         server_baseline_created_username: josh
-        server_baseline_tailscale_oauth_client_secret: "{{ tailscale_servers_oauth_key['key'] }}"
+        server_baseline_tailscale_oauth_client_secret: "{{ tailscale_servers_oauth_client['secret'] }}"
         server_baseline_ubuntu_packages:
           - tmux
         server_baseline_fedora_packages:

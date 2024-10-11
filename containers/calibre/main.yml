@@ -20,7 +20,7 @@
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_service_name: calibre
         tailscale_container_image: lscr.io/linuxserver/calibre
         tailscale_container_tag: latest
@@ -38,7 +38,7 @@
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_service_name: calibre-web
         tailscale_container_image: lscr.io/linuxserver/calibre-web
         tailscale_container_tag: arm64v8-0.6.22

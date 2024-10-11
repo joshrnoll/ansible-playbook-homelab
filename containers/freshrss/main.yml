@@ -12,7 +12,7 @@
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_key['key'] }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_service_name: fresh-rss
         tailscale_container_image: lscr.io/linuxserver/freshrss
         tailscale_container_tag: latest

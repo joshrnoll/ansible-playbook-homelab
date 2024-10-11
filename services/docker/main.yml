@@ -11,7 +11,7 @@
       ansible.builtin.include_role:
         name: joshrnoll.homelab.docker_setup
       vars:
-        docker_setup_tailscale_oauth_client_secret: "{{ tailscale_conatiners_oauth_client['secret'] }}"
+        docker_setup_tailscale_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         docker_setup_nas_ip_or_hostname: truenas.mink-pirate.ts.net
         docker_setup_share_name: DockerBackups
         docker_setup_mount_path: /home/{{ ansible_user }}/dockerbackups
