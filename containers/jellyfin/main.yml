@@ -24,7 +24,7 @@
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_service_name: jellyfin
         tailscale_container_image: lscr.io/linuxserver/jellyfin
-        tailscale_container_tag: arm64v8-10.9.7
+        tailscale_container_tag: arm64v8-10.9.11
         tailscale_container_serve_port: 8096
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/jellyfin/config:/config
