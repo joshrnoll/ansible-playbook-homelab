@@ -11,7 +11,7 @@
 - import_playbook: containers/cwa/main.yml
 - import_playbook: containers/gitea/main.yml
 - import_playbook: containers/media/media.yml
-- import_playbook: containers/lazylibrarian/main.yml.yml
+- import_playbook: containers/lazylibrarian/main.yml
 - import_playbook: containers/ntfy/main.yml.yml
 - import_playbook: containers/wbo/main.yml.yml
 - import_playbook: containers/plex/main.yml
