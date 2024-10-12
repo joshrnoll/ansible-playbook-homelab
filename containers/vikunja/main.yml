@@ -1,0 +1,48 @@
+---
+- name: Install and Configure vikunja
+  hosts: vikunja
+
+  tasks:
+    - name: Include variables
+      include_vars: 
+        dir: "{{ vars_dir_path }}/vars"
+
+    - name: Ensure db dir has correct permissions
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/vikunja/db
+        state: directory
+        owner: 1000
+        group: docker
+        mode: "0775"
+
+    - name: Ensure files dir has correct permissions
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/vikunja/files
+        state: directory
+        owner: 1000
+        group: docker
+        mode: "0775"
+
+    - name: Install Vikunja
+      include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: vikunja
+        tailscale_container_image: vikunja/vikunja
+        tailscale_container_tag: latest
+        tailscale_container_serve_port: 3456
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/vikunja/files:/app/vikunja/files
+          - /home/{{ ansible_user }}/vikunja/db:/db
+        tailscale_container_env_vars:
+          VIKUNJA_DATABASE_PATH: /db/vikunja.db
+          VIKUNJA_SERVICE_TIMEZONE: America/New_York
+          VIKUNJA_SERVICE_JWTSECRET: "{{ VIKUNJA_JWTSECRET }}"
+          VIKUNJA_SERVICE_PUBLICURL: https://vikunja.mink-pirate.ts.net/
+          VIKUNJA_SERVICE_ENABLEREGISTRATION: "1"
+          VIKUNJA_SERVICE_ENABLEEMAILREMINDERS: "1"
+          VIKUNJA_MAILER_ENABLED: "1"
+          VIKUNJA_MAILER_HOST: ntfy.mink-pirate.ts.net
+          VIKUNJA_MAILER_PORT: "25"
