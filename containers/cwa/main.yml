@@ -41,10 +41,9 @@
         tailscale_container_tag: latest
         tailscale_container_serve_port: 8083
         tailscale_container_volumes:
-          - /home/{{ ansible_user }}/{{ service_name }}/config:/config
-          - /home/{{ ansible_user }}/{{ service_name }}/book-ingest:/cwa-book-ingest
-          - /home/{{ ansible_user }}/{{ service_name }}/library:/calibre-library
-          # - /home/{{ ansible_user }}/{{ service_name }}/books:/books # Optional
+          - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/config:/config
+          - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/book-ingest:/cwa-book-ingest
+          - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/library:/calibre-library
         tailscale_container_env_vars:
           PUID: "1000"
           PGID: "999"
