@@ -1,0 +1,27 @@
+---
+- name: Install Nginx Proxy Manager
+  hosts: npm
+
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars:
+        dir: "{{ vars_dir_path }}/vars"
+
+    - name: Install Nginx Proxy Manager
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: npm
+        tailscale_container_image: jc21/nginx-proxy-manager
+        tailscale_container_tag: 2.12.1
+        tailscale_container_no_serve: true
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_extra_args: --stateful-filtering=false
+        tailscale_container_public: false
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/npm/data:/data
+          - /home/{{ ansible_user }}/npm/letsencrypt:/etc/letsencrypt
+...
