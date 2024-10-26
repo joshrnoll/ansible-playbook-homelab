@@ -1,7 +1,4 @@
 ---
-- name: Ensure docker is installed
-  import_playbook: ../../services/docker/main.yml
-
 - name: Install Gitea
   hosts: gitea
 
@@ -18,6 +15,7 @@
         tailscale_container_service_name: gitea
         tailscale_container_image: gitea/gitea
         tailscale_container_tag: 1.22.0
+        tailscale_container_userspace_networking: "false"
         tailscale_container_serve_port: 3000
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/gitea/data:/data
@@ -33,6 +31,7 @@
           GITA__mailer__SMTP_ADDR: ntfy.mink-pirate.ts.net
           GITEA__mailer__FROM: noreply@gitea.mink-pirate.ts.net
           GITEA__mailer__ENVELOPE_FROM: noreply@gitea.mink-pirate.ts.net
+          GITEA__server__ROOT_URL: https://gitea.nollhome.casa
         tailscale_container_labels:
           nautical-backup.enable: "true"
 ...
