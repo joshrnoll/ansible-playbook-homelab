@@ -1,6 +1,6 @@
 ---
 - name: Initial setup for all servers
-  hosts: ubuntu,fedora
+  hosts: ubuntu,fedora,proxmox_hosts
 
   tasks:
     - name: Import variables
@@ -15,6 +15,13 @@
         server_baseline_tailscale_oauth_client_secret: "{{ tailscale_servers_oauth_client['secret'] }}"
         server_baseline_ubuntu_packages:
           - tmux
+          - dnsutils
         server_baseline_fedora_packages:
           - tmux
+          - bind-utils
+        server_baseline_proxmox_packages:
+          - tmux
+
+- name: Create VM Templates
+  ansible.builtin.import_playbook: proxmox/create-vm-templates.yml
 ...

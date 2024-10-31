@@ -1,20 +1,11 @@
 ---
-- name: Initial setup for proxmox servers
+- name: Create VM Templates on Proxmox hosts
   hosts: proxmox_hosts
 
   tasks:
     - name: Import variables
       ansible.builtin.include_vars:
         dir: "{{ vars_dir_path }}/vars"
-
-    - name: Proxmox baseline
-      ansible.builtin.include_role:
-        name: joshrnoll.homelab.server_baseline
-      vars:
-        server_baseline_created_username: josh
-        server_baseline_tailscale_oauth_client_secret: "{{ tailscale_servers_oauth_client['secret'] }}"
-        server_baseline_proxmox_packages:
-          - tmux
 
     - name: Create VM templates
       ansible.builtin.include_role:
@@ -52,16 +43,4 @@
 
         # Set to true if you have slow storage to avoid file locks
         proxmox_template_vm_slow_storage: true
-
-    - name: Create desired VMs
-      ansible.builtin.include_role:
-        name: joshrnoll.homelab.create_proxmox_vms
-      vars:
-        # Proxmox credentials
-        create_proxmox_vms_proxmox_username: "{{ proxmox_username }}"
-        create_proxmox_vms_proxmox_api_token_id: "{{ proxmox_api_token_id }}"
-        create_proxmox_vms_proxmox_api_token_secret: "{{ proxmox_api_token_secret }}"
-
-        # VMs to be created
-        create_proxmox_vms_list: "{{ vms_to_create }}"
 ...

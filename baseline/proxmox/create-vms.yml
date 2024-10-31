@@ -1,0 +1,21 @@
+---
+- name: Create desired VMs
+  hosts: proxmox_api
+
+  tasks:
+    - name: Import variables
+      ansible.builtin.include_vars:
+        dir: "{{ vars_dir_path }}/vars"
+
+    - name: Create desired VMs
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.create_proxmox_vms
+      vars:
+        # Proxmox credentials
+        create_proxmox_vms_proxmox_username: "{{ proxmox_username }}"
+        create_proxmox_vms_proxmox_api_token_id: "{{ proxmox_api_token_id }}"
+        create_proxmox_vms_proxmox_api_token_secret: "{{ proxmox_api_token_secret }}"
+
+        # VMs to be created
+        create_proxmox_vms_list: "{{ vms_to_create }}"
+...
