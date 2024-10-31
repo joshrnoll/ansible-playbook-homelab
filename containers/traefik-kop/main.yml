@@ -1,0 +1,35 @@
+---
+- name: Install traefik-kop
+  hosts: docker
+
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Set architecture tag for ARM
+      ansible.builtin.set_fact:
+        arch: "arm64v8"
+      when: ansible_facts['architecture'] == 'aarch64'
+
+    - name: Set architecture tag for x86
+      ansible.builtin.set_fact:
+        arch: "amd64"
+      when: ansible_facts['architecture'] == 'x86_64'
+
+    - name: Install traefik-kop
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: traefik-kop
+        tailscale_container_image: ghcr.io/jittering/traefik-kop
+        tailscale_container_tag: 0.14.1-next-1978118-{{ arch }}
+        tailscale_container_no_serve: true
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+           - /var/run/docker.sock:/var/run/docker.sock
+        tailscale_container_env_vars:
+          REDIS_ADDR: "{{ traefik_redis_hostname }}:6379"
+          BIND_IP: "{{ ansible_facts['tailscale0']['ipv4']['address'] }}"

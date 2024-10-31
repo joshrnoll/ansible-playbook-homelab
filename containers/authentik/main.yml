@@ -1,11 +1,13 @@
 ---
 - name: Install Authentik
   hosts: authentik
+  vars:
+    authentik_version: 2024.10.0
 
   tasks:
     - name: Include variables
       ansible.builtin.include_vars:
-        dir: "{{ vars_dir_path }}/vars"
+        dir: "{{ root_playbook_dir }}/vars"
     
     - name: Ensure templates folder has correct permissions
       become: true
@@ -34,10 +36,23 @@
         group: "docker"
         mode: "0775"
 
+    - name: Define authentik-server container labels
+      ansible.builtin.set_fact:
+        server_container_labels:
+          nautical-backup.enable: "true"
+          traefik.enable: "true"
+          traefik.http.routers.authentik-server.rule: "Host(`authentik.{{ domain_name }}`)"
+          traefik.http.routers.authentik-server.entrypoints: "https"
+          traefik.http.routers.authentik-server.tls: "true"
+          traefik.http.routers.authentik-server.tls.certresolver: "cloudflare"
+          traefik.http.services.authentik-server.loadbalancer.server.scheme: "http"
+          traefik.http.services.authentik-server.loadbalancer.server.port: "9000"
+
     - name: Install Authentik DB
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_no_serve: true
         tailscale_container_service_name: authentik-db
@@ -57,6 +72,7 @@
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_no_serve: true
         tailscale_container_service_name: authentik-redis
@@ -73,10 +89,11 @@
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_service_name: authentik-server
         tailscale_container_image: ghcr.io/goauthentik/server
-        tailscale_container_tag: 2024.8.3
+        tailscale_container_tag: "{{ authentik_version }}"
         tailscale_container_commands: server
         tailscale_container_userspace_networking: "false"
         tailscale_container_serve_port: 9000
@@ -84,28 +101,30 @@
           - /home/{{ ansible_user }}/authentik-server/media:/media
           - /home/{{ ansible_user }}/authentik-server/custom-templates:/templates
         tailscale_container_env_vars:
-          AUTHENTIK_REDIS__HOST: authentik-redis.mink-pirate.ts.net
-          AUTHENTIK_POSTGRESQL__HOST: authentik-db.mink-pirate.ts.net
+          AUTHENTIK_REDIS__HOST: authentik-redis.{{ tailnet_name }}
+          AUTHENTIK_POSTGRESQL__HOST: authentik-db.{{ tailnet_name }}
           AUTHENTIK_POSTGRESQL__USER: "{{ AUTHENTIK_DB_USER }}"
           AUTHENTIK_POSTGRESQL__NAME: "{{ AUTHENTIK_DB_NAME }}"
           AUTHENTIK_POSTGRESQL__PASSWORD: "{{ AUTHENTIK_DB_PASS }}"
           AUTHENTIK_SECRET_KEY: "{{ AUTHENTIK_SECRET_KEY }}"
           AUTHENTIK_ERROR_REPORTING_ENABLED: "true"
-          AUTHENTIK_EMAIL__HOST: ntfy.mink-pirate.ts.net
+          AUTHENTIK_EMAIL__HOST: ntfy.{{ tailnet_name }}
           AUTHENTIK_EMAIL__PORT: "25"
-          AUTHENTIK_EMAIL__FROM: authentik@ntfy.mink-pirate.ts.net
-        tailscale_container_labels:
-          nautical-backup.enable: "true"
-
+          AUTHENTIK_EMAIL__FROM: authentik@ntfy.{{ tailnet_name }}
+        tailscale_container_labels: |
+          {{ server_container_labels | ansible.builtin.combine( 
+          {'kop.bind.ip': tailscale_container_ip_address, 'kop.bind.ip' : tailscale_container_ip_address}) }}
+    
     - name: Install Authentik worker
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_no_serve: true
         tailscale_container_service_name: authentik-worker
         tailscale_container_image: ghcr.io/goauthentik/server
-        tailscale_container_tag: 2024.8.3
+        tailscale_container_tag: "{{ authentik_version }}"
         tailscale_container_commands: worker
         tailscale_container_userspace_networking: "false"
         tailscale_container_volumes:
@@ -113,15 +132,15 @@
           - /home/{{ ansible_user }}/authentik-server/custom-templates:/templates
           - /home/{{ ansible_user }}/authentik-worker/certs:/certs
         tailscale_container_env_vars:
-          AUTHENTIK_REDIS__HOST: authentik-redis.mink-pirate.ts.net
-          AUTHENTIK_POSTGRESQL__HOST: authentik-db.mink-pirate.ts.net
+          AUTHENTIK_REDIS__HOST: authentik-redis.{{ tailnet_name }}
+          AUTHENTIK_POSTGRESQL__HOST: authentik-db.{{ tailnet_name }}
           AUTHENTIK_POSTGRESQL__USER: "{{ AUTHENTIK_DB_USER }}"
           AUTHENTIK_POSTGRESQL__NAME: "{{ AUTHENTIK_DB_NAME }}"
           AUTHENTIK_POSTGRESQL__PASSWORD: "{{ AUTHENTIK_DB_PASS }}"
           AUTHENTIK_SECRET_KEY: "{{ AUTHENTIK_SECRET_KEY }}"
           AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
-          AUTHENTIK_EMAIL__HOST: ntfy.mink-pirate.ts.net
+          AUTHENTIK_EMAIL__HOST: ntfy.{{ tailnet_name }}
           AUTHENTIK_EMAIL__PORT: "25"
-          AUTHENTIK_EMAIL__FROM: authentik@ntfy.mink-pirate.ts.net
+          AUTHENTIK_EMAIL__FROM: authentik@ntfy.{{ tailnet_name }}
         tailscale_container_labels:
           nautical-backup.enable: "true"

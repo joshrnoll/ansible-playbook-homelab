@@ -1,0 +1,97 @@
+---
+- name: Install Traefik
+  hosts: traefik
+
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Ensure traefik data directory exists with correct permissions
+      become: true
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/traefik/data
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "docker"
+        mode: "0775"
+
+    - name: Copy traefik.yml to server
+      become: true
+      ansible.builtin.template:
+        src: traefik.j2
+        dest: /home/{{ ansible_user }}/traefik/data/traefik.yml
+        owner: "{{ ansible_user }}"
+        group: "docker"
+        mode: "0775"
+
+    - name: Create empty acme.json file
+      become: true
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/traefik/data/acme.json
+        state: touch
+        owner: "{{ ansible_user }}"
+        group: "docker"
+        mode: "0600"
+
+    - name: Install Redis for traefik-kop
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: redis-traefik
+        tailscale_container_image: redis
+        tailscale_container_tag: 7.4.1
+        tailscale_container_no_serve: true
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/traefik-redis/data:/data
+        tailscale_container_commands: --save 60 1 --loglevel warning
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+    
+    - name: Install Traefik
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: traefik
+        tailscale_container_image: traefik
+        tailscale_container_tag: v3.1.6
+        tailscale_container_no_serve: true
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+          - /home/{{ ansible_user }}/traefik/data/traefik.yml:/traefik.yml:ro
+          - /home/{{ ansible_user }}/traefik/data/acme.json:/acme.json
+        tailscale_container_env_vars:
+          CF_DNS_API_TOKEN: "{{ cloudflare_api_token }}"
+          TRAEFIK_DASHBOARD_CREDENTIALS: "{{ traefik_dash_pass }}"
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+          traefik.enable: "true"
+          traefik.http.routers.traefik.entrypoints: "http"
+          traefik.http.routers.traefik.rule: "Host(`traefik.{{ domain_name }}`)"
+          traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme: "https"
+          traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto: "https"
+          traefik.http.middlewares.authentik.forwardAuth.address: "https://authentik.nollhome.casa/outpost.goauthentik.io/auth/traefik"
+          traefik.http.middlewares.authentik.forwardAuth.trustForwardHeader: "true"
+          traefik.http.middlewares.authentik.forwardAuth.authResponseHeaders: |
+            X-authentik-username,X-authentik-groups,X-authentik-email,
+            X-authentik-name,X-authentik-uid,X-authentik-jwt,
+            X-authentik-meta-jwks,X-authentik-meta-outpost,
+            X-authentik-meta-provider,X-authentik-meta-app,
+            X-authentik-meta-version
+          traefik.http.routers.traefik.middlewares: "traefik-https-redirect"
+          traefik.http.routers.traefik-secure.entrypoints: "https"
+          traefik.http.routers.traefik-secure.rule: "Host(`traefik.{{ domain_name }}`)"
+          traefik.http.routers.traefik-secure.tls: "true"
+          traefik.http.routers.traefik-secure.tls.certresolver: "cloudflare"
+          traefik.http.routers.traefik-secure.tls.domains[0].main: "{{ domain_name }}"
+          traefik.http.routers.traefik-secure.tls.domains[0].sans: "*.{{ domain_name }}"
+          traefik.http.routers.traefik-secure.service: "api@internal"
+          traefik.http.services.traefik-secure.loadbalancer.server.port: "443"
+...

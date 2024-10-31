@@ -5,12 +5,13 @@
   tasks:
     - name: Include variables
       ansible.builtin.include_vars:
-        dir: "{{ vars_dir_path }}/vars"
+        dir: "{{ root_playbook_dir }}/vars"
 
     - name: Install Uptime Kuma
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
       vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         tailscale_container_service_name: uptime-kuma
         tailscale_container_image: louislam/uptime-kuma
@@ -20,6 +21,12 @@
         tailscale_container_public: false
         tailscale_container_labels:
           nautical-backup.enable: "true"
+          traefik.enable: "true"
+          traefik.http.routers.uptime-kuma.rule: "Host(`uptime-kuma.nollhome.casa`)"
+          traefik.http.routers.uptime-kuma.entrypoints: "https"
+          traefik.http.routers.uptime-kuma.tls: "true"
+          traefik.http.routers.uptime-kuma.middlewares: authentik@docker
+          traefik.http.services.uptime-kuma.loadbalancer.server.port: "3001"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/uptime-kuma/data:/app/data
         tailscale_container_env_vars:
