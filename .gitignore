@@ -1,6 +1,6 @@
 staging.yml
 production.yml
-hosts.ini
+hosts.*
 tailscale_oauth_key.yml
 media.yml
 secrets.*
