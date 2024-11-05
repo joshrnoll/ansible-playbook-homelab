@@ -36,18 +36,6 @@
         group: "docker"
         mode: "0775"
 
-    - name: Define authentik-server container labels
-      ansible.builtin.set_fact:
-        server_container_labels:
-          nautical-backup.enable: "true"
-          traefik.enable: "true"
-          traefik.http.routers.authentik-server.rule: "Host(`authentik.{{ domain_name }}`)"
-          traefik.http.routers.authentik-server.entrypoints: "https"
-          traefik.http.routers.authentik-server.tls: "true"
-          traefik.http.routers.authentik-server.tls.certresolver: "cloudflare"
-          traefik.http.services.authentik-server.loadbalancer.server.scheme: "http"
-          traefik.http.services.authentik-server.loadbalancer.server.port: "9000"
-
     - name: Install Authentik DB
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
@@ -111,10 +99,25 @@
           AUTHENTIK_EMAIL__HOST: ntfy.{{ tailnet_name }}
           AUTHENTIK_EMAIL__PORT: "25"
           AUTHENTIK_EMAIL__FROM: authentik@ntfy.{{ tailnet_name }}
-        tailscale_container_labels: |
-          {{ server_container_labels | ansible.builtin.combine( 
-          {'kop.bind.ip': tailscale_container_ip_address, 'kop.bind.ip' : tailscale_container_ip_address}) }}
-    
+        tailscale_container_labels: 
+          nautical-backup.enable: "true"
+          traefik.enable: "true"
+          # Authentik traefik service 
+          traefik.http.services.authentik-svc.loadbalancer.server.scheme: "http"
+          traefik.http.services.authentik-svc.loadbalancer.server.port: "9000"
+          # Router for Authentik web page
+          traefik.http.routers.authentik-server.rule: "Host(`authentik.{{ domain_name }}`)"
+          traefik.http.routers.authentik-server.entrypoints: "https"
+          traefik.http.routers.authentik-server.tls: "true"
+          traefik.http.routers.authentik-server.tls.certresolver: "cloudflare"
+          traefik.http.routers.authentik-server.service: "authentik-svc"
+          # Router for Authentik forward auth redirects
+          traefik.http.routers.authentik-forwardauth-redirect.rule: "HostRegexp(`{subdomain:[a-z0-9-]+}.{{ domain_name }}`) && PathPrefix(`/outpost.goauthentik.io/`)"
+          traefik.http.routers.authentik-forwardauth-redirect.entrypoints: "https"
+          traefik.http.routers.authentik-forwardauth-redirect.tls: "true"
+          traefik.http.routers.authentik-forwardauth-redirect.tls.certresolver: "cloudflare"
+          traefik.http.routers.authentik-forwardauth-redirect.service: "authentik-svc"
+
     - name: Install Authentik worker
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
