@@ -1,6 +1,6 @@
 ---
 - name: Install traefik-kop
-  hosts: docker
+  hosts: traefik_kop
 
   tasks:
     - name: Include variables
@@ -23,7 +23,7 @@
       vars:
         tailscale_container_tailnet_name: "{{ tailnet_name }}"
         tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
-        tailscale_container_service_name: traefik-kop
+        tailscale_container_service_name: traefik-kop-{{ ansible_facts['nodename'] }}
         tailscale_container_image: ghcr.io/jittering/traefik-kop
         tailscale_container_tag: 0.14.1-next-1978118-{{ arch }}
         tailscale_container_no_serve: true
