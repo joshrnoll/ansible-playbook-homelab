@@ -1,0 +1,12 @@
+---
+deploy_container_traefik_labels:
+  - key: "traefik.enable"
+    value: "true"
+  - key: "traefik.http.routers.{{ deploy_container_service_name }}.rule"
+    value: "Host(`{{ deploy_container_service_name }}.{{ deploy_container_domain_name }}`)"
+  - key: "traefik.http.routers.{{ deploy_container_service_name }}.entrypoints"
+    value: "https"
+  - key: "traefik.http.routers.{{ deploy_container_service_name }}.tls.certresolver"
+    value: "cloudlfare"
+  - key: "traefik.http.services.{{ deploy_container_service_name }}.loadbalancer.server.port"
+    value: "{{ deploy_container_service_port }}"

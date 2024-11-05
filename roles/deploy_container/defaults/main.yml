@@ -1,0 +1,8 @@
+---
+deploy_container_host_group_name: nginx
+deploy_container_service_name: nginx
+deploy_container_service_image: nginx
+deploy_container_service_tag: latest
+deploy_container_service_port: "80" # Must be quoted -- ex. "80" not 80
+deploy_container_service_scheme: http # http or https
+deploy_container_forward_auth: false

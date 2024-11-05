@@ -1,0 +1,55 @@
+---
+- name: Create traefik labels with items2dict
+  ansible.builtin.set_fact:
+    deploy_container_traefik_labels: "{{ deploy_container_traefik_labels | items2dict }}"
+
+- name: Set forward auth labels
+  ansible.builtin.set_fact:
+    deploy_container_forward_auth_labels:
+      - key: "traefik.http.routers.{{ deploy_container_service_name }}.middlewares" 
+        value: "authentik-forward-auth@file" 
+      - key: "traefik.http.services.{{ deploy_container_service_name }}.loadbalancer.server.scheme"
+        value: "{{ deploy_container_service_scheme }}"
+  when: deploy_container_forward_auth is true
+
+- name: Create forward auth labels with items2dict
+  ansible.builtin.set_fact:
+    deploy_container_forward_auth_labels: "{{ deploy_container_forward_auth_labels | items2dict }}"
+  when: deploy_container_forward_auth is true
+
+- name: Add forward auth labels to deploy_container_traefik_labels
+  ansible.builtin.set_fact:
+    deploy_container_traefik_labels: "{{ deploy_container_traefik_labels | ansible.builtin.combine(deploy_container_traefik_labels,deploy_container_forward_auth_labels) }}"
+  when: deploy_container_forward_auth is true
+
+- name: Deploy {{ deploy_container_service_name }}
+  ansible.builtin.include_role:
+    name: joshrnoll.homelab.tailscale_container
+  vars:
+    tailscale_container_tailnet_name: "{{ deploy_container_tailnet_name }}"
+    tailscale_container_oauth_client_secret: "{{ deploy_container_oauth_client_secret }}"
+    tailscale_container_service_name: "{{ deploy_container_service_name }}"
+    tailscale_container_image: "{{ deploy_container_service_image }}"
+    tailscale_container_tag: "{{ deploy_container_service_tag }}"
+    tailscale_container_no_serve: true
+    tailscale_container_userspace_networking: "false"
+    tailscale_container_volumes: "{{ deploy_container_volumes | default(omit) }}"
+    tailscale_container_env_vars: "{{ deploy_container_env_vars | default(omit) }}"
+    tailscale_container_labels: "{{ deploy_container_traefik_labels | ansible.builtin.combine( {'kop.bind.ip': tailscale_container_ip_address} ) }}"
+
+- name: Look up IP address for traefik
+  ansible.builtin.set_fact:
+    traefik_ip: "{{ query ('community.dns.lookup', 'traefik.nollhome.casa') }}"
+
+- name: Create/update Cloudflare DNS record
+  community.general.cloudflare_dns:
+    zone: "{{ deploy_container_domain_name }}"
+    record: "{{ deploy_container_service_name }}"
+    type: A
+    value: "{{ traefik_ip[0] }}"
+    solo: true
+    proxied: false
+    account_email: "{{ deploy_container_cloudflare_email }}"
+    api_token: "{{ deploy_container_cloudflare_api_token }}"
+    state: present
+...
