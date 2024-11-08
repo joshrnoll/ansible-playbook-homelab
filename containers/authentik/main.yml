@@ -96,9 +96,13 @@
           AUTHENTIK_POSTGRESQL__PASSWORD: "{{ AUTHENTIK_DB_PASS }}"
           AUTHENTIK_SECRET_KEY: "{{ AUTHENTIK_SECRET_KEY }}"
           AUTHENTIK_ERROR_REPORTING_ENABLED: "true"
-          AUTHENTIK_EMAIL__HOST: ntfy.{{ tailnet_name }}
-          AUTHENTIK_EMAIL__PORT: "25"
-          AUTHENTIK_EMAIL__FROM: authentik@ntfy.{{ tailnet_name }}
+          AUTHENTIK_EMAIL__HOST: smtp.gmail.com
+          AUTHENTIK_EMAIL__PORT: "587"
+          AUTHENTIK_EMAIL__FROM: authentik@nollhome.casa
+          AUTHENTIK_EMAIL__USE_TLS: "true"
+          AUTHENTIK_EMAIL__USERNAME: "{{ gmail_address }}"
+          AUTHENTIK_EMAIL__PASSWORD: "{{ gmail_app_pass }}"
+
         tailscale_container_labels: 
           nautical-backup.enable: "true"
           traefik.enable: "true"
@@ -142,8 +146,11 @@
           AUTHENTIK_POSTGRESQL__PASSWORD: "{{ AUTHENTIK_DB_PASS }}"
           AUTHENTIK_SECRET_KEY: "{{ AUTHENTIK_SECRET_KEY }}"
           AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
-          AUTHENTIK_EMAIL__HOST: ntfy.{{ tailnet_name }}
-          AUTHENTIK_EMAIL__PORT: "25"
-          AUTHENTIK_EMAIL__FROM: authentik@ntfy.{{ tailnet_name }}
+          AUTHENTIK_EMAIL__HOST: smtp.gmail.com
+          AUTHENTIK_EMAIL__PORT: "587"
+          AUTHENTIK_EMAIL__FROM: authentik@nollhome.casa
+          AUTHENTIK_EMAIL__USE_TLS: "true"
+          AUTHENTIK_EMAIL__USERNAME: "{{ gmail_address }}"
+          AUTHENTIK_EMAIL__PASSWORD: "{{ gmail_app_pass }}"
         tailscale_container_labels:
           nautical-backup.enable: "true"
