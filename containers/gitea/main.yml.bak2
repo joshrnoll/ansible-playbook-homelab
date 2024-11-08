@@ -1,0 +1,38 @@
+---
+- name: Install Gitea
+  hosts: gitea
+
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Install Gitea
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: gitea
+        tailscale_container_image: gitea/gitea
+        tailscale_container_tag: 1.22.0
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_serve_port: 3000
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/gitea/data:/data
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+        tailscale_container_env_vars:
+          USER_UID: "1000"
+          USER_GID: "999"
+          GITEA__DEFAULT__APP_NAME: "Josh Noll's Gitea"
+          GITEA__mailer__ENABLED: "true"
+          GITEA__mailer__PROTOCOL: smtp
+          GITEA__mailer__SMTP_PORT: "25"
+          GITA__mailer__SMTP_ADDR: ntfy.mink-pirate.ts.net
+          GITEA__mailer__FROM: noreply@gitea.mink-pirate.ts.net
+          GITEA__mailer__ENVELOPE_FROM: noreply@gitea.mink-pirate.ts.net
+          GITEA__server__ROOT_URL: https://gitea.nollhome.casa
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+...

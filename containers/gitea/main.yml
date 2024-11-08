@@ -1,37 +1,52 @@
 ---
-- name: Install Gitea
-  hosts: gitea
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: gitea # Service/container name
+    deploy_container_host_group_name: gitea # Host group for container to be deployed to
+    deploy_container_service_image: gitea/gitea # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: 1.22.3 # Image tag -- ex. latest
+    deploy_container_service_port: "3000" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/gitea/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    deploy_container_env_vars: # Customize or omit
+      USER_UID: "1000"
+      USER_GID: "999"
+      GITEA__DEFAULT__APP_NAME: "NollHomeLab"
+      GITEA__mailer__ENABLED: "true"
+      GITEA__mailer__PROTOCOL: smtp
+      GITEA__mailer__SMTP_PORT: "25"
+      GITA__mailer__SMTP_ADDR: ntfy.{{ tailnet_name }}
+      GITEA__mailer__FROM: noreply@gitea.{{ tailnet_name }}
+      GITEA__mailer__ENVELOPE_FROM: noreply@gitea.{{ tailnet_name }}
+      GITEA__server__ROOT_URL: https://gitea.{{ domain_name }}
+      GITEA__openid__ENABLE_OPENID_SIGNIN: "true"
+      GITEA__openid__ENABLE_OPENID_SIGNUP: "true"
+      GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION: "true"
+      GITEA__service__DISABLE_REGISTRATION: "false"
+    deploy_container_labels:
+      - key: "traefik.http.middlewares.gitea-login-redirect.redirectregex.regex"
+        value: "^https://gitea.{{ domain_name }}/user/login*"
+      - key: "traefik.http.middlewares.gitea-login-redirect.redirectregex.replacement"
+        value: "https://gitea.{{ domain_name }}/user/oauth2/Authentik"
+      - key: "traefik.http.routers.gitea.middlewares"
+        value: "gitea-login-redirect"      
 
   tasks:
-    - name: Include variables
+    - name: Include vars
       ansible.builtin.include_vars:
-        dir: "{{ vars_dir_path }}/vars"
+        dir: "{{ root_playbook_dir }}/vars"
 
-    - name: Install Gitea
+    - name: Deploy container
       ansible.builtin.include_role:
-        name: joshrnoll.homelab.tailscale_container
-      vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
-        tailscale_container_service_name: gitea
-        tailscale_container_image: gitea/gitea
-        tailscale_container_tag: 1.22.0
-        tailscale_container_userspace_networking: "false"
-        tailscale_container_serve_port: 3000
-        tailscale_container_volumes:
-          - /home/{{ ansible_user }}/gitea/data:/data
-          - /etc/timezone:/etc/timezone:ro
-          - /etc/localtime:/etc/localtime:ro
-        tailscale_container_env_vars:
-          USER_UID: "1000"
-          USER_GID: "999"
-          GITEA__DEFAULT__APP_NAME: "Josh Noll's Gitea"
-          GITEA__mailer__ENABLED: "true"
-          GITEA__mailer__PROTOCOL: smtp
-          GITEA__mailer__SMTP_PORT: "25"
-          GITA__mailer__SMTP_ADDR: ntfy.mink-pirate.ts.net
-          GITEA__mailer__FROM: noreply@gitea.mink-pirate.ts.net
-          GITEA__mailer__ENVELOPE_FROM: noreply@gitea.mink-pirate.ts.net
-          GITEA__server__ROOT_URL: https://gitea.nollhome.casa
-        tailscale_container_labels:
-          nautical-backup.enable: "true"
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
 ...
