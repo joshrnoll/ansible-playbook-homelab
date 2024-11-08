@@ -19,6 +19,11 @@
     deploy_container_env_vars: # Customize or omit
       PUID: "1000"
       PGID: "999"
+    deploy_container_labels: # Customize or omit
+      - key: "key-here"
+        value: "value here"
+      - key: "key-here"
+        value: "value here"
 
   tasks:
     - name: Include vars
