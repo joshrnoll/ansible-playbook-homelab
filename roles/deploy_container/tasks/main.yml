@@ -3,6 +3,11 @@
   ansible.builtin.set_fact:
     deploy_container_traefik_labels: "{{ deploy_container_traefik_labels | items2dict }}"
 
+- name: Create additional labels if provided with items2dict
+  ansible.builtin.set_fact:
+    deploy_container_labels: "{{ deploy_container_labels | items2dict }}"
+  when: deploy_container_labels is defined
+
 - name: Set forward auth labels
   ansible.builtin.set_fact:
     deploy_container_forward_auth_labels:
@@ -21,6 +26,11 @@
   ansible.builtin.set_fact:
     deploy_container_traefik_labels: "{{ deploy_container_traefik_labels | ansible.builtin.combine(deploy_container_traefik_labels,deploy_container_forward_auth_labels) }}"
   when: deploy_container_forward_auth is true
+
+- name: Add additional labels if provided
+  ansible.builtin.set_fact:
+    deploy_container_traefik_labels: "{{ deploy_container_traefik_labels | ansible.builtin.combine(deploy_container_traefik_labels,deploy_container_labels) }}"
+  when: deploy_container_labels is defined
 
 - name: Deploy {{ deploy_container_service_name }}
   ansible.builtin.include_role:

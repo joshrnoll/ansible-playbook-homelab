@@ -29,6 +29,11 @@ deploy_container_cloudflare_email: myemail@gmail.com
 deploy_container_cloudflare_api_token: <my-api-token>
 deploy_container_volumes: <volumes-in-list-format>
 deploy_container_env_vars: <volumes-in-dict-format>
+deploy_container_labels:
+  - key: "this-is-a-key"
+    value: "this-is-a-value"
+  - key: "this-is-a-key"
+    value: "this-is-a-value"
 deploy_container_commands: "echo 'startup commands go here'"
 
 ```
