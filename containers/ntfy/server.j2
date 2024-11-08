@@ -34,8 +34,8 @@ listen-http: ":80"
 #
 smtp-sender-addr: smtp.gmail.com:587
 smtp-sender-from: noreply@ntfy.mink-pirate.ts.net
-smtp-sender-user: nollhomelab@gmail.com
-smtp-sender-pass:
+smtp-sender-user: {{ gmail_address }}
+smtp-sender-pass: {{ gmail_app_pass }}
 
 # If enabled, ntfy will launch a lightweight SMTP server for incoming messages. Once configured, users can send
 # emails to a topic e-mail address to publish messages to a topic.

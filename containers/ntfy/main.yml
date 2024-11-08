@@ -13,19 +13,11 @@
         state: directory
         mode: "0775"
 
-    - name: Copy server.yml to server
-      ansible.builtin.copy:
-        src: server.yml
-        dest: /home/{{ ansible_user }}/ntfy/etc/ntfy/server.yml
-        force: true
+    - name: Template server.yml to server
+      ansible.builtin.template:
+        src: server.j2
+        dest: /home/{{ ansible_user }}/ntfy/etc/ntfy/server.yml        
         mode: "0775"
-
-    - name: Add gmail app password to server.yml
-      ansible.builtin.lineinfile:
-        regexp: '^smtp-sender-pass:'
-        line: 'smtp-sender-pass: {{ gmail_app_pass }}'
-        path: /home/{{ ansible_user }}/ntfy/etc/ntfy/server.yml
-        state: present
 
     - name: Install ntfy
       ansible.builtin.include_role:
