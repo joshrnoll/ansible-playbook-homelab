@@ -1,39 +1,62 @@
 ---
-- name: Install jellyfin
-  hosts: jellyfin
-
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: jellyfin # Service/container name
+    deploy_container_host_group_name: jellyfin # Host group for container to be deployed to
+    deploy_container_service_image: lscr.io/linuxserver/jellyfin # Container image -- ex. louislam/uptime-kuma
+    # Set dynamically in tasks
+    # deploy_container_service_tag: arm64v8-10.9.11 # Image tag -- ex. latest
+    deploy_container_service_port: "8096" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/jellyfin/config:/config
+      - /home/{{ ansible_user }}/media/media:/media
+    deploy_container_env_vars: # Customize or omit
+      PUID: "1000"
+      PGID: "999"
+      TZ: "America/New_York"
+      Version: "docker"
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+      - key: "traefik.http.middlewares.jellyfin-login-redirect.redirectregex.regex"
+        value: "^https://jellyfin.{{ domain_name }}/web/#/login(.*)"
+      - key: "traefik.http.middlewares.jellyfin-login-redirect.redirectregex.replacement"
+        value: "https://jellyfin.{{ domain_name }}/sso/OID/start/authentik"
+      - key: "traefik.http.routers.jellyfin.middlewares"
+        value: "jellyfin-login-redirect"      
   tasks:
-
-    - name: Include variables
+    - name: Include vars
       ansible.builtin.include_vars:
-        dir: "{{ vars_dir_path }}/vars"
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Set image tag for ARM system
+      ansible.builtin.set_fact:
+        deploy_container_service_tag: arm64v8-10.9.11
+      when: ansible_facts['architecture'] == "aarch64"
+
+    - name: Set image tag for x86 system
+      ansible.builtin.set_fact:
+        deploy_container_service_tag: 10.9.11
+      when: ansible_facts['architecture'] == "x86_64"
 
     - name: Mount media drive from NAS
       become: true
       ansible.posix.mount:
         src: //10.0.30.10/Media
-        path: /home/josh/media
+        path: /home/{{ ansible_user }}/media
         opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
         fstype: cifs
         state: mounted
 
-    - name: Install jellyfin
+    - name: Deploy container
       ansible.builtin.include_role:
-        name: joshrnoll.homelab.tailscale_container
-      vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
-        tailscale_container_service_name: jellyfin
-        tailscale_container_image: lscr.io/linuxserver/jellyfin
-        tailscale_container_tag: arm64v8-10.9.11
-        tailscale_container_serve_port: 8096
-        tailscale_container_volumes:
-          - /home/{{ ansible_user }}/jellyfin/config:/config
-          - /home/{{ ansible_user }}/media/media:/media
-        tailscale_container_env_vars:
-          PUID: "1000"
-          PGID: "999"
-          TZ: "America/New_York"
-          Version: "docker"
-        tailscale_container_labels:
-          nautical-backup.enable: "true"
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
 ...
