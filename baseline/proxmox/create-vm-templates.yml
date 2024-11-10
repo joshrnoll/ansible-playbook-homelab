@@ -5,7 +5,7 @@
   tasks:
     - name: Import variables
       ansible.builtin.include_vars:
-        dir: "{{ vars_dir_path }}/vars"
+        dir: "{{ root_playbook_dir }}/vars"
 
     - name: Create VM templates
       ansible.builtin.include_role:
