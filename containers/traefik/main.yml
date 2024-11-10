@@ -54,6 +54,14 @@
         group: "docker"
         mode: "0775"
 
+    - name: Allow memory overcommit for Redis
+      become: true
+      ansible.posix.sysctl:
+        name: vm.overcommit_memory
+        value: "1"
+        state: present
+        reload: true
+
     - name: Install Redis for traefik-kop
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
