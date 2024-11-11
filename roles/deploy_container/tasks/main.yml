@@ -13,8 +13,6 @@
     deploy_container_forward_auth_labels:
       - key: "traefik.http.routers.{{ deploy_container_service_name }}.middlewares" 
         value: "authentik-forward-auth@file" 
-      - key: "traefik.http.services.{{ deploy_container_service_name }}.loadbalancer.server.scheme"
-        value: "{{ deploy_container_service_scheme }}"
   when: deploy_container_forward_auth is true
 
 - name: Create forward auth labels with items2dict
