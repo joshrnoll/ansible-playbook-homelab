@@ -1,10 +1,14 @@
+![](/nollhomelab-logo.svg)
+
 # An Ansible Playbook for Automating my Homelab
 The goal of this playbook is to be a **One-Command-Homelab.** Its purpose in life is to automate the setup and configuration of my homelab by running one command:
 
 ```
 ./run.sh
 ```
-It's a constant work in progress.
+Additionally, this giant playbook defines my homelab almost entirely. Effectively running my ***Homelab as Code - HaC***.
+
+It's a constant work in progress...
 
 ## Features
 Click [here](./FEATURES.md) for a comprehensive list of features and their status.
