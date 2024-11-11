@@ -1,30 +1,42 @@
 #!/bin/bash
 
-# Prompt for the become password
+# Install requirements
+# echo "Installing requirements..."
+# pip install -r requirements.txt
+
+##################################
+# PROMPT FOR THE BECOME PASSWORD #
+##################################
 read -sp 'BECOME password: ' BECOME_PASS
-
-# new line for formatting
 echo  
 
-# Prompt for the vault password
+#################################
+# PROMPT FOR THE VAULT PASSWORD #
+#################################
 read -sp 'VAULT password: ' VAULT_PASS
-
-# new line for formatting
 echo  
 
-# Create a temporary file for the vault password
+##################################################
+# CREATE A TEMPORARY FILE FOR THE VAULT PASSWORD #
+##################################################
 VAULT_PASS_FILE=$(mktemp)
 echo "$VAULT_PASS" > "$VAULT_PASS_FILE"
 
-# Ensure the temporary file is deleted after script execution
+###############################################################
+# ENSURE THE TEMPORARY FILE IS DELETED AFTER SCRIPT EXECUTION #
+###############################################################
 trap 'rm -f "$VAULT_PASS_FILE"' EXIT
 
-# Call playbook for Proxmox setup and VM creation
-ansible-playbook -i production.yml baseline/proxmox/main.yml \
---extra-vars "ansible_become_pass=$BECOME_PASS vars_dir_path=$PWD" \
+###################################################
+# CALL PLAYBOOK FOR PROXMOX SETUP AND VM CREATION #
+###################################################
+ansible-playbook -i hosts.yml baseline/proxmox/main.yml \
+--extra-vars "ansible_become_pass=$BECOME_PASS root_playbook_dir=$PWD" \
 --vault-password-file "$VAULT_PASS_FILE"
 
-# Call main.yml for homelab configuration
-ansible-playbook -i production.yml main.yml \
---extra-vars "ansible_become_pass=$BECOME_PASS vars_dir_path=$PWD" \
+###########################################
+# CALL MAIN.YML FOR HOMELAB CONFIGURATION #
+###########################################
+ansible-playbook -i hosts.yml main.yml \
+--extra-vars "ansible_become_pass=$BECOME_PASS root_playbook_dir=$PWD" \
 --vault-password-file "$VAULT_PASS_FILE"

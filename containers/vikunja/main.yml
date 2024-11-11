@@ -5,7 +5,7 @@
   tasks:
     - name: Include variables
       include_vars: 
-        dir: "{{ vars_dir_path }}/vars"
+        dir: "{{ root_playbook_dir }}/vars"
 
     - name: Ensure db dir has correct permissions
       ansible.builtin.file:

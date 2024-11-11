@@ -5,7 +5,7 @@
   tasks:
     - name: Include variables
       ansible.builtin.include_vars:
-        dir: "{{ vars_dir_path }}/vars"
+        dir: "{{ root_playbook_dir }}/vars"
 
     - name: Mount media drive from NAS
       become: true
