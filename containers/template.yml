@@ -20,10 +20,8 @@
       PUID: "1000"
       PGID: "999"
     deploy_container_labels: # Customize or omit
-      - key: "key-here"
-        value: "value here"
-      - key: "key-here"
-        value: "value here"
+      - key: "nautical-backup.enable"
+        value: "true"
 
   tasks:
     - name: Include vars
