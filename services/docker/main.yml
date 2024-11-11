@@ -11,6 +11,7 @@
       ansible.builtin.include_role:
         name: joshrnoll.homelab.docker_setup
       vars:
+        docker_setup_install_nautical: true
         docker_setup_tailnet_name: "{{ tailnet_name }}"
         docker_setup_tailscale_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
         docker_setup_nas_ip_or_hostname: 10.0.30.10
