@@ -56,6 +56,28 @@
         fstype: cifs
         state: mounted
 
+    - name: Template branding.xml to server
+      ansible.builtin.template:
+        src: branding.xml.j2
+        dest: /home/{{ ansible_user }}/jellyfin/config/branding.xml
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: "0600"
+    
+    - name: Copy custom logo to server
+      ansible.builtin.copy:
+        src: nollhomelab-jellyfin.png
+        dest: /home/{{ ansible_user }}/jellyfin/config/nollhomelab-jellyfin.png
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: "0644"
+
+    - name: Copy custom logo to web root folder
+      community.docker.docker_container_exec:
+        container: "{{ deploy_container_service_name }}"
+        command: "cp /config/nollhomelab-jellyfin.png /usr/share/jellyfin/web/assets/img/nollhomelab-jellyfin.png"
+      changed_when: false
+
     - name: Deploy container
       ansible.builtin.include_role:
         name: "{{ root_playbook_dir }}/roles/deploy_container"

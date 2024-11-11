@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BrandingOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  
+  <LoginDisclaimer>
+&lt;img src="assets/img/nollhomelab-jellyfin.png" alt="NollHomeLab Jellyfin Logo" class="loginPageimg" /&gt;
+&lt;h2 class="loginPageh2" &gt;
+Welcome to the NollHomeLab Jellyfin Server!
+&lt;/h2&gt; 
+&lt;h3 class="loginPageh3" &gt;
+Sick of paying for Netflix?
+&lt;/h3&gt;  
+&lt;form action="https://jellyfin.{{ domain_name }}/sso/OID/start/authentik"&gt;
+&lt;button class="raised block sso-button button-submit"&gt;
+    Sign in with NollHomeLab SSO
+  &lt;/button&gt;
+&lt;/form&gt;
+  </LoginDisclaimer>
+
+  <CustomCss>
+/* Remove regular login elements */
+#loginPage .inputContainer {
+    display: none;
+}
+#loginPage .emby-button {
+    display: none;
+}
+#loginPage .checkboxContainer {
+    display: none;
+}
+#loginPage h1 {
+  display: none;
+}
+#loginPage .padded-left.padded-right.padded-bottom-page {
+  margin-top: 50px;
+}
+#loginPage .raised.cancel.block.btnManual.emby-button {
+  display: none;
+}
+#loginPage .raised.cancel.block.btnForgotPassword.emby-button {
+  display: none;
+}
+
+/* Style h2 and h3 and center all elements*/
+.loginPageh2 {    
+    text-align: center;
+    font-size: 28px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: bold;
+}
+.loginPageh3 {
+    text-align: center;
+    font-size: 18px;
+    font-family: 'Open Sans', sans-serif;
+    font-style: italic;
+}
+.loginPageimg {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+/* Ensure disclaimer container is displayed */
+.disclaimerContainer {
+    display: block !important;
+}
+
+/* Additional styling for the "Login with SSO" button */
+.sso-button {
+    margin: auto;
+    width: 40%;
+    display: block;
+    padding: 10px 20px;
+    background-color: #007bff; 
+    color: #fff; 
+    font-size: 16px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: bold;
+    border-radius: 25px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); 
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Smooth transition for hover */
+}
+
+/* Add hover effect */
+.sso-button:hover {
+    background-color: #0056b3; 
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.35); 
+    transform: translateY(-2px); 
+}
+  </CustomCss>
+
+  <SplashscreenEnabled>true</SplashscreenEnabled>
+  
+</BrandingOptions>
