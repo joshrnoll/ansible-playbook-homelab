@@ -1,0 +1,54 @@
+---
+- name: Deploy tracks
+  hosts: tracks
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Install DB
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: tracks-db
+        tailscale_container_image: postgres
+        tailscale_container_tag: 13.16
+        tailscale_container_no_serve: true
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes: 
+          - /home/{{ ansible_user }}/tracks-db/data:/var/lib/postgresql/data
+        tailscale_container_env_vars: 
+          POSTGRES_DB: "tracks"
+          POSTGRES_USER: "{{ tracks_db_user }}"
+          POSTGRES_PASSWORD: "{{ tracks_db_password }}"
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+      vars:
+        deploy_container_service_name: tracks # Service/container name
+        deploy_container_host_group_name: tracks # Host group for container to be deployed to
+        deploy_container_service_image: tracksapp/tracks # Container image -- ex. louislam/uptime-kuma
+        deploy_container_service_tag: latest # Image tag -- ex. latest
+        deploy_container_service_port: "3000" # Must be quoted -- ex. "80" not 80
+        deploy_container_service_scheme: http # http or https
+        deploy_container_forward_auth: false # true or false
+        deploy_container_tailnet_name: "{{ tailnet_name }}"
+        deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        deploy_container_domain_name: "{{ domain_name }}"
+        deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+        deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+        deploy_container_volumes: # Customize or omit
+          - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/app:/app
+        deploy_container_env_vars: # Customize or omit
+          DATABASE_NAME: "tracks"
+          DATABASE_HOST: "tracks-db.mink-pirate.ts.net"
+          DATABASE_PORT: "5432"
+          DATABASE_USERNAME: "{{ tracks_db_username }}"
+          DATABASE_PASSWORD: "{{ tracks_db_password }}"
+...
