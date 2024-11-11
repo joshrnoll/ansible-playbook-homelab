@@ -40,7 +40,7 @@
       become: true
       ansible.builtin.file:
         path: /home/{{ ansible_user }}/traefik/data/acme.json
-        state: file
+        state: touch
         owner: "{{ ansible_user }}"
         group: "docker"
         mode: "0600"
@@ -127,4 +127,7 @@
         account_email: "{{ cloudflare_email }}"
         api_token: "{{ cloudflare_api_token }}"
         state: present
+
+- name: Deploy traefik-kop to other docker hosts
+  ansible.builtin.import_playbook: kop.yml
 ...
