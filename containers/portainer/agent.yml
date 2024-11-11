@@ -1,0 +1,35 @@
+---
+- name: Install portainer-agent on docker hosts
+  hosts: docker:!portainer
+
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars: 
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Set image tag for ARM system
+      ansible.builtin.set_fact:
+        arch: arm64
+      when: ansible_facts['architecture'] == "aarch64"
+
+    - name: Set image tag for x86 system
+      ansible.builtin.set_fact:
+        arch: amd64
+      when: ansible_facts['architecture'] == "x86_64"
+
+    - name: Install portainer agent
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: portainer-agent-{{ ansible_facts['nodename'] }}
+        tailscale_container_image: portainer/agent
+        tailscale_container_tag: linux-{{ arch }}-2.21.4
+        tailscale_container_no_serve: true
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /var/lib/docker/volumes:/var/lib/docker/volumes
+          - /:/host
+...
