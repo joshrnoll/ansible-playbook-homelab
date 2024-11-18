@@ -19,16 +19,15 @@ serversTransport:
 providers:
   providersThrottleDuration: 2s
   docker:
+    watch: true
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
   redis:
     endpoints:
-      # assumes a redis link with this service name running on the same
-      # docker host as traefik
       - "{{ traefik_redis_hostname }}:6379"
   file:
-    directory: /config-files
     watch: true
+    directory: /config-files
 
 certificatesResolvers:
   cloudflare:
