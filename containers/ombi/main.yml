@@ -1,0 +1,64 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: ombi # Service/container name
+    deploy_container_host_group_name: ombi # Host group for container to be deployed to
+    deploy_container_service_image: lscr.io/linuxserver/ombi # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: 4.44.1 # Image tag -- ex. latest
+    deploy_container_service_port: "3579" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: "http" # http or https
+    deploy_container_forward_auth: true # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config:/config
+    deploy_container_env_vars: # Customize or omit
+      PUID: "1000"
+      PGID: "999"
+      TZ: "America/New_York"
+      BASE_URL: "/"
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Copy custom logo to server
+      ansible.builtin.copy:
+        src: nollhomelab-ombi.png
+        dest: /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config/nollhomelab-ombi.png
+        mode: "0644"
+        owner: "{{ ansible_user }}"
+        group: "docker"
+
+    - name: Copy custom favicon to server
+      ansible.builtin.copy:
+        src: nollhomelab-favicon.ico
+        dest: /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config/nollhomelab-favicon.ico
+        mode: "0644"
+        owner: "{{ ansible_user }}"
+        group: "docker"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+
+    - name: Copy custom logo to web root folder
+      community.docker.docker_container_exec:
+        container: "{{ deploy_container_service_name }}"
+        command: "cp /config/nollhomelab-ombi.png /app/ombi/ClientApp/dist/nollhomelab.png"
+      changed_when: false
+
+    - name: Copy custom favicon to web root folder
+      community.docker.docker_container_exec:
+        container: "{{ deploy_container_service_name }}"
+        command: "cp /config/nollhomelab-favicon.ico /app/ombi/wwwroot/images/nollhomelab-favicon.ico"
+      changed_when: false
+...
