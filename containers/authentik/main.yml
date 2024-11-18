@@ -110,7 +110,7 @@
           traefik.http.services.authentik-svc.loadbalancer.server.scheme: "http"
           traefik.http.services.authentik-svc.loadbalancer.server.port: "9000"
           # Router for Authentik web page
-          traefik.http.routers.authentik-server.rule: "Host(`authentik.{{ domain_name }}`) || Host(`{{ domain_name }}`)"
+          traefik.http.routers.authentik-server.rule: "Host(`authentik.{{ domain_name }}`)"
           traefik.http.routers.authentik-server.entrypoints: "https"
           traefik.http.routers.authentik-server.tls: "true"
           traefik.http.routers.authentik-server.tls.certresolver: "cloudflare"
@@ -173,8 +173,8 @@
 
     - name: Create/update Cloudflare DNS record
       community.general.cloudflare_dns:
-        zone: "authentik.{{ domain_name }}"
-        record: "@"
+        zone: "{{ domain_name }}"
+        record: "authentik.{{ domain_name }}"
         type: A
         value: "{{ traefik_ip[0] }}"
         solo: true
