@@ -62,6 +62,16 @@
         state: present
         reload: true
 
+    - name: Generate cron job to restart Redis every day
+      become: true
+      ansible.builtin.cron:
+        user: "{{ ansible_user }}"
+        name: "restart redis"
+        minute: "0"
+        hour: "4"
+        weekday: "*"
+        job: "docker container restart redis-traefik"
+
     - name: Install Redis for traefik-kop
       ansible.builtin.include_role:
         name: joshrnoll.homelab.tailscale_container
