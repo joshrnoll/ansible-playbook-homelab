@@ -98,7 +98,7 @@
           AUTHENTIK_ERROR_REPORTING_ENABLED: "true"
           AUTHENTIK_EMAIL__HOST: smtp.gmail.com
           AUTHENTIK_EMAIL__PORT: "587"
-          AUTHENTIK_EMAIL__FROM: authentik@nollhome.casa
+          AUTHENTIK_EMAIL__FROM: authentik@{{ domain_name }}
           AUTHENTIK_EMAIL__USE_TLS: "true"
           AUTHENTIK_EMAIL__USERNAME: "{{ gmail_address }}"
           AUTHENTIK_EMAIL__PASSWORD: "{{ gmail_app_pass }}"
@@ -110,7 +110,7 @@
           traefik.http.services.authentik-svc.loadbalancer.server.scheme: "http"
           traefik.http.services.authentik-svc.loadbalancer.server.port: "9000"
           # Router for Authentik web page
-          traefik.http.routers.authentik-server.rule: "Host(`authentik.{{ domain_name }}`)"
+          traefik.http.routers.authentik-server.rule: "Host(`authentik.{{ domain_name }}`) || Host(`{{ domain_name }}`)"
           traefik.http.routers.authentik-server.entrypoints: "https"
           traefik.http.routers.authentik-server.tls: "true"
           traefik.http.routers.authentik-server.tls.certresolver: "cloudflare"
@@ -148,9 +148,37 @@
           AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
           AUTHENTIK_EMAIL__HOST: smtp.gmail.com
           AUTHENTIK_EMAIL__PORT: "587"
-          AUTHENTIK_EMAIL__FROM: authentik@nollhome.casa
+          AUTHENTIK_EMAIL__FROM: authentik@{{ domain_name }}
           AUTHENTIK_EMAIL__USE_TLS: "true"
           AUTHENTIK_EMAIL__USERNAME: "{{ gmail_address }}"
           AUTHENTIK_EMAIL__PASSWORD: "{{ gmail_app_pass }}"
         tailscale_container_labels:
           nautical-backup.enable: "true"
+
+    - name: Look up IP address for traefik
+      ansible.builtin.set_fact:
+        traefik_ip: "{{ query ('community.dns.lookup', 'traefik.{{ domain_name }}') }}"
+
+    - name: Create/update Cloudflare DNS record
+      community.general.cloudflare_dns:
+        zone: "{{ domain_name }}"
+        record: "@"
+        type: A
+        value: "{{ traefik_ip[0] }}"
+        solo: true
+        proxied: false
+        account_email: "{{ cloudflare_email }}"
+        api_token: "{{ cloudflare_api_token }}"
+        state: present
+
+    - name: Create/update Cloudflare DNS record
+      community.general.cloudflare_dns:
+        zone: "authentik.{{ domain_name }}"
+        record: "@"
+        type: A
+        value: "{{ traefik_ip[0] }}"
+        solo: true
+        proxied: false
+        account_email: "{{ cloudflare_email }}"
+        api_token: "{{ cloudflare_api_token }}"
+        state: present
