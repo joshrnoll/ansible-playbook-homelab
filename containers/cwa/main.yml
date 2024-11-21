@@ -1,9 +1,34 @@
 ---
-- name: Install Calibre-Web Automated
-  hosts: cwa
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: cwa # Service/container name
+    deploy_container_host_group_name: cwa # Host group for container to be deployed to
+    deploy_container_service_image: crocodilestick/calibre-web-automated # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: V2.1.2 # Image tag -- ex. latest
+    deploy_container_service_port: "8083" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: true # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/config:/config
+      - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/book-ingest:/cwa-book-ingest
+      - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/library:/calibre-library
+    deploy_container_env_vars: # Customize or omit
+      PUID: "1000"
+      PGID: "999"
+      TZ: "America/New_York"
+      DOCKER_MODS: "linuxserver/mods:universal-calibre"
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
 
   tasks:
-    - name: Include variables
+    - name: Include vars
       ansible.builtin.include_vars:
         dir: "{{ root_playbook_dir }}/vars"
 
@@ -31,24 +56,7 @@
         hour: "8,16"
         job: "/home/{{ ansible_user }}/cwa/booksync.sh"
 
-    - name: Install Calibre-Web Automated
+    - name: Deploy container
       ansible.builtin.include_role:
-        name: joshrnoll.homelab.tailscale_container
-      vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
-        tailscale_container_service_name: cwa
-        tailscale_container_image: crocodilestick/calibre-web-automated
-        tailscale_container_tag: latest
-        tailscale_container_serve_port: 8083
-        tailscale_container_volumes:
-          - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/config:/config
-          - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/book-ingest:/cwa-book-ingest
-          - /home/{{ ansible_user }}/{{ tailscale_container_service_name }}/library:/calibre-library
-        tailscale_container_env_vars:
-          PUID: "1000"
-          PGID: "999"
-          TZ: "America/New_York"
-          DOCKER_MODS: "linuxserver/mods:universal-calibre"
-        tailscale_container_labels:
-          nautical-backup.enable: "true"
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
 ...
