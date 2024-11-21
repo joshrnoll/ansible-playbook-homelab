@@ -39,12 +39,12 @@
 
     - name: Set image tag for ARM system
       ansible.builtin.set_fact:
-        deploy_container_service_tag: arm64v8-10.9.11
+        deploy_container_service_tag: arm64v8-10.10.3
       when: ansible_facts['architecture'] == "aarch64"
 
     - name: Set image tag for x86 system
       ansible.builtin.set_fact:
-        deploy_container_service_tag: 10.9.11
+        deploy_container_service_tag: 10.10.3
       when: ansible_facts['architecture'] == "x86_64"
 
     - name: Mount media drive from NAS
@@ -77,6 +77,14 @@
         container: "{{ deploy_container_service_name }}"
         command: "cp /config/nollhomelab-jellyfin.png /usr/share/jellyfin/web/assets/img/nollhomelab-jellyfin.png"
       changed_when: false
+
+    - name: Copy IPTV XML guide to server
+      ansible.builtin.copy:
+        src: guide.xml
+        dest: /home/{{ ansible_user }}/jellyfin/config/guide.xml
+        mode: "0644"
+        owner: "{{ ansible_user }}"
+        group: "docker"
 
     - name: Deploy container
       ansible.builtin.include_role:
