@@ -1,30 +1,45 @@
 ---
-## TODO - Freshrss webui refusing connections
-- name: Install FreshRSS
-  hosts: freshrss
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: freshrss # Service/container name
+    deploy_container_host_group_name: freshrss # Host group for container to be deployed to
+    deploy_container_service_image: freshrss/freshrss # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: 1.24.3 # Image tag -- ex. latest
+    deploy_container_service_port: "80" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/data:/var/www/FreshRSS/data
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/extensions:/var/www/FreshRSS/extensions
+    deploy_container_env_vars: # Customize or omit
+      PUID: "1000"
+      PGID: "999"
+      TZ: "America/New_York"
+      CRON_MIN: "1,31"
+      OIDC_ENABLED: "1"
+      OIDC_PROVIDER_METADATA_URL: https://authentik.nollhome.casa/application/o/freshrss/.well-known/openid-configuration
+      OIDC_REMOTE_USER_CLAIM: preferred_username
+      OIDC_CLIENT_ID: "{{ freshrss_client_id }}"
+      OIDC_CLIENT_SECRET: "{{ freshrss_client_secret }}"
+      OIDC_CLIENT_CRYPTO_KEY: "{{ freshrss_client_crypto_key }}"
+      OIDC_SCOPES: "openid email profile"
+      OIDC_X_FORWARDED_HEADERS: X-Forwarded-Host X-Forwarded-Port X-Forwarded-Proto
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
 
   tasks:
-    - name: Include variables
+    - name: Include vars
       ansible.builtin.include_vars:
         dir: "{{ root_playbook_dir }}/vars"
 
-    - name: Install FreshRSS
+    - name: Deploy container
       ansible.builtin.include_role:
-        name: joshrnoll.homelab.tailscale_container
-      vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
-        tailscale_container_service_name: fresh-rss
-        tailscale_container_image: lscr.io/linuxserver/freshrss
-        tailscale_container_tag: latest
-        tailscale_container_serve_port: 80
-        tailscale_container_userspace_networking: "false"
-        tailscale_container_public: false
-        tailscale_container_labels:
-          nautical-backup.enable: "true"
-        tailscale_container_volumes:
-          - /home/{{ ansible_user }}/fresh-rss/config:/config
-        tailscale_container_env_vars:
-          PUID: "1000"
-          PGID: "999"
-          TZ: "America/New_York"
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
 ...
