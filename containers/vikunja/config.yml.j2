@@ -1,0 +1,11 @@
+auth:
+  local:
+    enabled: false
+  openid:
+    enabled: true
+    providers:
+      - name: NollHomeLab SSO
+        authurl: "https://authentik.{{ domain_name }}/application/o/vikunja/"
+        logouturl: "https://authentik.{{ domain_name }}/application/o/vikunja/end-session/"
+        clientid: {{ vikunja_client_id }}
+        clientsecret: {{ vikunja_client_secret }}

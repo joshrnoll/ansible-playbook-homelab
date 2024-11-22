@@ -1,48 +1,61 @@
 ---
-- name: Install and Configure vikunja
-  hosts: vikunja
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: vikunja # Service/container name
+    deploy_container_host_group_name: vikunja # Host group for container to be deployed to
+    deploy_container_service_image: vikunja/vikunja # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: 0.24.5 # Image tag -- ex. latest
+    deploy_container_service_port: "3456" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/vikunja/files:/app/vikunja/files
+      - /home/{{ ansible_user }}/vikunja/config/config.yml:/etc/vikunja/config.yml:ro
+      - /home/{{ ansible_user }}/vikunja/db:/db
+    deploy_container_env_vars: # Customize or omit
+      VIKUNJA_DATABASE_PATH: /db/vikunja.db
+      VIKUNJA_SERVICE_TIMEZONE: America/New_York
+      VIKUNJA_SERVICE_JWTSECRET: "{{ VIKUNJA_JWTSECRET }}"
+      VIKUNJA_SERVICE_PUBLICURL: https://vikunja.{{ domain_name }}
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: "true"
+      VIKUNJA_SERVICE_ENABLEEMAILREMINDERS: "true"
+      VIKUNJA_MAILER_ENABLED: "true"
+      VIKUNJA_MAILER_HOST: smtp.gmail.com
+      VIKUNJA_MAILER_PORT: "587"
+      VIKUNJA_MAILER_USERNAME: "{{ gmail_address }}"
+      VIKUNJA_MAILER_PASSWORD: "{{ gmail_app_pass }}"
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
 
   tasks:
-    - name: Include variables
-      include_vars: 
+    - name: Include vars
+      ansible.builtin.include_vars:
         dir: "{{ root_playbook_dir }}/vars"
 
-    - name: Ensure db dir has correct permissions
+    - name: Ensure config directory exists
       ansible.builtin.file:
-        path: /home/{{ ansible_user }}/vikunja/db
+        path: /home/{{ ansible_user }}/vikunja/config
         state: directory
-        owner: 1000
-        group: docker
-        mode: "0775"
+        mode: "0744"
+        owner: "{{ ansible_user }}"
+        group: "docker"
 
-    - name: Ensure files dir has correct permissions
-      ansible.builtin.file:
-        path: /home/{{ ansible_user }}/vikunja/files
-        state: directory
-        owner: 1000
-        group: docker
-        mode: "0775"
+    - name: Copy config file to server
+      ansible.builtin.template:
+        src: config.yml.j2
+        dest: /home/{{ ansible_user }}/vikunja/config/config.yml
+        mode: "0744"
+        owner: "{{ ansible_user }}"
+        group: "docker"
 
-    - name: Install Vikunja
-      include_role:
-        name: joshrnoll.homelab.tailscale_container
-      vars:
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
-        tailscale_container_service_name: vikunja
-        tailscale_container_image: vikunja/vikunja
-        tailscale_container_tag: latest
-        tailscale_container_serve_port: 3456
-        tailscale_container_userspace_networking: "false"
-        tailscale_container_volumes:
-          - /home/{{ ansible_user }}/vikunja/files:/app/vikunja/files
-          - /home/{{ ansible_user }}/vikunja/db:/db
-        tailscale_container_env_vars:
-          VIKUNJA_DATABASE_PATH: /db/vikunja.db
-          VIKUNJA_SERVICE_TIMEZONE: America/New_York
-          VIKUNJA_SERVICE_JWTSECRET: "{{ VIKUNJA_JWTSECRET }}"
-          VIKUNJA_SERVICE_PUBLICURL: https://vikunja.mink-pirate.ts.net/
-          VIKUNJA_SERVICE_ENABLEREGISTRATION: "1"
-          VIKUNJA_SERVICE_ENABLEEMAILREMINDERS: "1"
-          VIKUNJA_MAILER_ENABLED: "1"
-          VIKUNJA_MAILER_HOST: ntfy.mink-pirate.ts.net
-          VIKUNJA_MAILER_PORT: "25"
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...
