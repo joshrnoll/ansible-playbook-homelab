@@ -124,6 +124,7 @@
           traefik.http.routers.traefik-secure.tls.domains[0].main: "{{ domain_name }}"
           traefik.http.routers.traefik-secure.tls.domains[0].sans: "*.{{ domain_name }}"
           traefik.http.routers.traefik-secure.service: "api@internal"
+          traefik.http.routers.traefik-secure.middlewares: "authentik-forward-auth@file"
           traefik.http.services.traefik-secure.loadbalancer.server.port: "443"
 
     - name: Create/update Cloudflare DNS record
