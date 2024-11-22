@@ -1,0 +1,67 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: linkwarden # Service/container name
+    deploy_container_host_group_name: linkwarden # Host group for container to be deployed to
+    deploy_container_service_image: ghcr.io/linkwarden/linkwarden # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: v2.8.3 # Image tag -- ex. latest
+    deploy_container_service_port: "3000" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/data:/data/data
+    deploy_container_env_vars: # Customize or omit
+      NEXTAUTH_URL: https://linkwarden.nollhome.casa/api/v1/auth
+      NEXTAUTH_SECRET: "{{ linkwarden_secret }}"
+      DATABASE_URL: postgresql://{{ linkwarden_db_user }}:{{ linkwarden_db_password }}@linkwarden-db.{{ tailnet_name }}:5432/{{ linkwarden_db_name }}
+      NEXT_PUBLIC_AUTHENTIK_ENABLED: "true"
+      NEXT_PUBLIC_DISABLE_REGISTRATION: "true"
+      NEXT_PUBLIC_CREDENTIALS_ENABLED: "false"
+      NEXT_PUBLIC_EMAIL_PROVIDER: "true"
+      EMAIL_FROM: "nollhomelab@gmail.com"
+      EMAIL_SERVER: "smtp://{{ gmail_address }}:{{ gmail_app_pass }}@smtp.gmail.com:587"
+      DISABLE_NEW_SSO_USERS: "false"
+      AUTHENTIK_CUSTOM_NAME: "NollHomeLab"
+      AUTHENTIK_ISSUER: https://authentik.{{ domain_name }}/application/o/linkwarden
+      AUTHENTIK_CLIENT_ID: "{{ linkwarden_client_id }}"
+      AUTHENTIK_CLIENT_SECRET: "{{ linkwarden_client_secret }}"
+
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Install Linkwarden DB
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_no_serve: true
+        tailscale_container_service_name: linkwarden-db
+        tailscale_container_image: docker.io/library/postgres
+        tailscale_container_tag: 16-alpine
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/linkwarden-db/data:/var/lib/postgresql/data
+        tailscale_container_env_vars:
+          POSTGRES_PASSWORD: "{{ linkwarden_db_password }}"
+          POSTGRES_USER: "{{ linkwarden_db_user }}"
+          POSTGRES_DB: "{{ linkwarden_db_name }}"
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...
