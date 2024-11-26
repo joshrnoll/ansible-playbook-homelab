@@ -1,5 +1,5 @@
 ---
-- name: Create VM Templates on Proxmox hosts
+- name: Baseline Proxmox hosts and create VM templates
   hosts: proxmox_hosts
 
   tasks:
