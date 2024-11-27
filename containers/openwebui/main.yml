@@ -1,0 +1,44 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: ai # Service/container name
+    deploy_container_host_group_name: ollama # Host group for container to be deployed to
+    deploy_container_service_image: ghcr.io/open-webui/open-webui # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: main # Image tag -- ex. latest
+    deploy_container_service_port: "8080" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/data:/app/backend/data
+    deploy_container_env_vars: # Customize or omit
+      OLLAMA_BASE_URL: "https://ollama.nollhome.casa"
+      ENABLE_OAUTH_SIGNUP: "true"
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: "true"
+      OAUTH_CLIENT_ID: "{{ openwebui_client_id }}"
+      OAUTH_CLIENT_SECRET: "{{ openwebui_client_secret }}"
+      OPENID_PROVIDER_URL: https://authentik.nollhome.casa/application/o/openwebui/.well-known/openid-configuration
+      OPENID_REDIRECT_URI: https://ai.nollhome.casa/oauth/oidc/callback
+      OAUTH_PROVIDER_NAME: NollHomeLab SSO
+      OAUTH_SCOPES: "openid email profile"
+      OAUTH_ROLES_CLAIM: "roles"
+      OAUTH_ALLOWED_ROLES: openwebui_users,nollhomelab_users
+      OAUTH_ADMIN_ROLES: openwebui_admins
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...
