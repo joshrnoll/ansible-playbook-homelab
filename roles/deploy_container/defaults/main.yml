@@ -1,4 +1,5 @@
 ---
+deploy_container_userspace_networking: "false"
 deploy_container_host_group_name: nginx
 deploy_container_service_name: nginx
 deploy_container_service_image: nginx

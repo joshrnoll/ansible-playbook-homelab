@@ -27,7 +27,7 @@
         tailscale_container_image: portainer/agent
         tailscale_container_tag: linux-{{ arch }}-2.21.4
         tailscale_container_no_serve: true
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - /var/lib/docker/volumes:/var/lib/docker/volumes

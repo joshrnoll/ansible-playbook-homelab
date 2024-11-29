@@ -40,7 +40,7 @@
     tailscale_container_image: "{{ deploy_container_service_image }}"
     tailscale_container_tag: "{{ deploy_container_service_tag }}"
     tailscale_container_no_serve: true
-    tailscale_container_userspace_networking: "false"
+    tailscale_container_userspace_networking: "{{ deploy_container_userspace_networking }}"
     tailscale_container_volumes: "{{ deploy_container_volumes | default(omit) }}"
     tailscale_container_env_vars: "{{ deploy_container_env_vars | default(omit) }}"
     tailscale_container_labels: "{{ deploy_container_traefik_labels | ansible.builtin.combine( {'kop.bind.ip': tailscale_container_ip_address} ) }}"
