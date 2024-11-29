@@ -1,0 +1,77 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: search # Service/container name
+    deploy_container_host_group_name: searxng # Host group for container to be deployed to
+    deploy_container_service_image: docker.io/searxng/searxng # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: 2024.11.27-342d32119 # Image tag -- ex. latest
+    deploy_container_service_port: "8080" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config:/etc/searxng
+    deploy_container_env_vars: # Customize or omit
+      SEARXNG_BASE_URL: https://search.{{ domain_name }}
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Ensure config directory exists with correct permissions
+      become: true
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/search/config
+        state: directory
+        mode: "0774"
+        owner: "977"
+        group: "977"
+
+    - name: Template settings.yml to server
+      become: true
+      ansible.builtin.template:
+        src: settings.yml.j2
+        dest: /home/{{ ansible_user }}/search/config/settings.yml
+        mode: "0774"
+        owner: "977"
+        group: "977"
+
+    - name: Template limiter.toml to server
+      become: true
+      ansible.builtin.copy:
+        src: limiter.toml
+        dest: /home/{{ ansible_user }}/search/config/limiter.toml
+        mode: "0774"
+        owner: "977"
+        group: "977"
+
+    - name: Install Redis
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_no_serve: true
+        tailscale_container_service_name: search-redis
+        tailscale_container_image: docker.io/library/redis
+        tailscale_container_tag: alpine
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/search-redis/data:/data
+        tailscale_container_commands: --save 60 1 --loglevel warning
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...
