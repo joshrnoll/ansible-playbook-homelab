@@ -1,0 +1,54 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: mealie # Service/container name
+    deploy_container_host_group_name: mealie # Host group for container to be deployed to
+    deploy_container_service_image: ghcr.io/mealie-recipes/mealie # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: v2.3.0 # Image tag -- ex. latest
+    deploy_container_service_port: "9000" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/data:/app/data
+    deploy_container_env_vars: # Customize or omit
+      PUID: "1000"
+      PGID: "999"
+      TZ: "America/New_York"
+      BASE_URL: "https://mealie.{{ domain_name }}"
+      OIDC_AUTH_ENABLED: "true"
+      OIDC_SIGNUP_ENABLED: "true"
+      OIDC_PROVIDER_NAME: "NollHomeLab SSO"
+      OIDC_AUTO_REDIRECT: "true"
+      OIDC_REMEMBER_ME: "true"
+      OIDC_CONFIGURATION_URL: "https://authentik.nollhome.casa/application/o/mealie/.well-known/openid-configuration"
+      OIDC_CLIENT_SECRET: "{{ mealie_client_secret }}"
+      OIDC_CLIENT_ID: "{{ mealie_client_id }}"
+      OIDC_GROUPS_CLAIM: "groups"
+      OIDC_USER_GROUP: "nollhome_users"
+      OIDC_ADMIN_GROUP: "nollhome_admins"
+      SMTP_HOST: "smtp.gmail.com"
+      SMTP_PORT: "587"
+      SMTP_AUTH_STRATEGY: "TLS"
+      SMTP_FROM_NAME: "Mealie"
+      SMTP_FROM_EMAIL: "{{ gmail_address }}"
+      SMTP_USER: "{{ gmail_address }}"
+      SMTP_PASSWORD: "{{ gmail_app_pass }}"
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...
