@@ -19,6 +19,11 @@
     deploy_container_env_vars: # Customize or omit
       OLLAMA_BASE_URL: "https://ollama.nollhome.casa"
       ENABLE_OAUTH_SIGNUP: "true"
+      ENABLE_RAG_WEB_SEARCH: "true"
+      RAG_WEB_SEARCH_ENGINE: "searxng"
+      RAG_WEB_SEARCH_RESULT_COUNT: "3"
+      RAG_WEB_SEARCH_CONCURRENT_REQUESTS: "10"
+      SEARXNG_QUERY_URL: "https://search.{{ domain_name }}/search?q=<query>"
       OAUTH_MERGE_ACCOUNTS_BY_EMAIL: "true"
       OAUTH_CLIENT_ID: "{{ openwebui_client_id }}"
       OAUTH_CLIENT_SECRET: "{{ openwebui_client_secret }}"
