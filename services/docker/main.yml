@@ -14,7 +14,7 @@
         docker_setup_install_nautical: true
         docker_setup_tailnet_name: "{{ tailnet_name }}"
         docker_setup_tailscale_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
-        docker_setup_nas_ip_or_hostname: 10.0.30.10
+        docker_setup_nas_ip_or_hostname: 10.0.30.11
         docker_setup_share_name: DockerBackups
         docker_setup_mount_path: /home/{{ ansible_user }}/dockerbackups
         docker_setup_share_username: "{{ truenas_username }}"
