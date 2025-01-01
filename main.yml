@@ -2,18 +2,30 @@
 - name: Homelab Setup
   hosts: all
 
-# Baseline and VM deployment
+# Baseline and docker setup
 - import_playbook: baseline/main.yml
 - import_playbook: services/docker/main.yml
 
 # Containers
+- import_playbook: containers/traefik/main.yml
+- import_playbook: containers/authentik/main.yml
+- import_playbook: containers/portainer/main.yml
+- import_playbook: containers/uptime-kuma/main.yml
+- import_playbook: containers/wikijs/main.yml
+- import_playbook: containers/vikunja/main.yml
 - import_playbook: containers/code-server/main.yml
 - import_playbook: containers/cwa/main.yml
+- import_playbook: containers/freshrss/main.yml
 - import_playbook: containers/gitea/main.yml
+- import_playbook: containers/heimdall/main.yml
+- import_playbook: containers/jellyfin/main.yml
+- import_playbook: containers/linkwarden/main.yml
+- import_playbook: containers/mealie/main.yml
 - import_playbook: containers/media/media.yml
-- import_playbook: containers/lazylibrarian/main.yml
+- import_playbook: containers/nextcloud/main.yml
 - import_playbook: containers/ntfy/main.yml
-- import_playbook: containers/wbo/main.yml
-- import_playbook: containers/plex/main.yml
-- import_playbook: containers/uptime-kuma/main.yml
+- import_playbook: containers/ollama/main.yml
+- import_playbook: containers/openwebui/main.yml
+- import_playbook: containers/searxng/main.yml
+
 ...
