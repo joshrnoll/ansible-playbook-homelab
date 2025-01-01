@@ -2,7 +2,7 @@
 - name: Install Traefik
   hosts: traefik
   vars:
-    traefik_version: v3.1.6
+    traefik_version: v3.2.3
 
   tasks:
     - name: Include variables
@@ -82,7 +82,7 @@
         tailscale_container_image: redis
         tailscale_container_tag: 7.4.1
         tailscale_container_no_serve: true
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/redis-traefik/data:/data
         tailscale_container_commands: --save 60 1 --loglevel warning
@@ -99,7 +99,7 @@
         tailscale_container_image: traefik
         tailscale_container_tag: "{{ traefik_version }}"
         tailscale_container_no_serve: true
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
           - /etc/localtime:/etc/localtime:ro
           - /var/run/docker.sock:/var/run/docker.sock:ro

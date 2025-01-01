@@ -2,7 +2,7 @@
 - name: Install Authentik
   hosts: authentik
   vars:
-    authentik_version: 2024.10.4
+    authentik_version: 2024.10.5
 
   tasks:
     - name: Include variables
@@ -46,7 +46,7 @@
         tailscale_container_service_name: authentik-db
         tailscale_container_image: docker.io/library/postgres
         tailscale_container_tag: 16-alpine
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/authentik-db/data:/var/lib/postgresql/data
         tailscale_container_env_vars:
@@ -66,7 +66,7 @@
         tailscale_container_service_name: authentik-redis
         tailscale_container_image: docker.io/library/redis
         tailscale_container_tag: alpine
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/authentik-redis/data:/data
         tailscale_container_commands: --save 60 1 --loglevel warning
@@ -83,7 +83,7 @@
         tailscale_container_image: ghcr.io/goauthentik/server
         tailscale_container_tag: "{{ authentik_version }}"
         tailscale_container_commands: server
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_serve_port: 9000
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/authentik-server/media:/media
@@ -102,7 +102,6 @@
           AUTHENTIK_EMAIL__USE_TLS: "true"
           AUTHENTIK_EMAIL__USERNAME: "{{ gmail_address }}"
           AUTHENTIK_EMAIL__PASSWORD: "{{ gmail_app_pass }}"
-
         tailscale_container_labels: 
           nautical-backup.enable: "true"
           traefik.enable: "true"
@@ -121,6 +120,7 @@
           traefik.http.routers.authentik-forwardauth-redirect.tls: "true"
           traefik.http.routers.authentik-forwardauth-redirect.tls.certresolver: "cloudflare"
           traefik.http.routers.authentik-forwardauth-redirect.service: "authentik-svc"
+          kop.bind.ip: "{{ tailscale_container_ip_address }}"
 
     - name: Install Authentik worker
       ansible.builtin.include_role:
@@ -133,7 +133,7 @@
         tailscale_container_image: ghcr.io/goauthentik/server
         tailscale_container_tag: "{{ authentik_version }}"
         tailscale_container_commands: worker
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/authentik-server/media:/media
           - /home/{{ ansible_user }}/authentik-server/custom-templates:/templates

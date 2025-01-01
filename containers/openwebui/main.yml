@@ -5,7 +5,7 @@
     deploy_container_service_name: ai # Service/container name
     deploy_container_host_group_name: ollama # Host group for container to be deployed to
     deploy_container_service_image: ghcr.io/open-webui/open-webui # Container image -- ex. louislam/uptime-kuma
-    deploy_container_service_tag: main # Image tag -- ex. latest
+    deploy_container_service_tag: v0.4.8 # Image tag -- ex. latest
     deploy_container_service_port: "8080" # Must be quoted -- ex. "80" not 80
     deploy_container_service_scheme: http # http or https
     deploy_container_forward_auth: false # true or false
@@ -17,6 +17,7 @@
     deploy_container_volumes: # Customize or omit
       - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/data:/app/backend/data
     deploy_container_env_vars: # Customize or omit
+      WEBUI_NAME: "Cognita"
       OLLAMA_BASE_URL: "https://ollama.nollhome.casa"
       ENABLE_OAUTH_SIGNUP: "true"
       ENABLE_RAG_WEB_SEARCH: "true"

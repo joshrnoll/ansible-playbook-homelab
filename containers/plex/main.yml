@@ -10,7 +10,7 @@
     - name: Mount media drive from NAS
       become: true
       ansible.posix.mount:
-        src: //10.0.30.10/Media
+        src: //10.0.30.11/Media
         path: /home/josh/media
         opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
         fstype: cifs

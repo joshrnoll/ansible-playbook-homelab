@@ -51,7 +51,7 @@
         tailscale_container_service_name: linkwarden-db
         tailscale_container_image: docker.io/library/postgres
         tailscale_container_tag: 16-alpine
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
           - /home/{{ ansible_user }}/linkwarden-db/data:/var/lib/postgresql/data
         tailscale_container_env_vars:

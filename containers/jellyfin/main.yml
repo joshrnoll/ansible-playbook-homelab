@@ -50,7 +50,7 @@
     - name: Mount media drive from NAS
       become: true
       ansible.posix.mount:
-        src: //10.0.30.10/Media
+        src: //10.0.30.11/Media
         path: /home/{{ ansible_user }}/media
         opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
         fstype: cifs
@@ -72,12 +72,6 @@
         group: docker
         mode: "0644"
 
-    - name: Copy custom logo to web root folder
-      community.docker.docker_container_exec:
-        container: "{{ deploy_container_service_name }}"
-        command: "cp /config/nollhomelab-jellyfin.png /usr/share/jellyfin/web/assets/img/nollhomelab-jellyfin.png"
-      changed_when: false
-
     - name: Copy IPTV XML guide to server
       ansible.builtin.copy:
         src: guide.xml
@@ -89,4 +83,10 @@
     - name: Deploy container
       ansible.builtin.include_role:
         name: "{{ root_playbook_dir }}/roles/deploy_container"
+
+    - name: Copy custom logo to web root folder
+      community.docker.docker_container_exec:
+        container: "{{ deploy_container_service_name }}"
+        command: "cp /config/nollhomelab-jellyfin.png /usr/share/jellyfin/web/assets/img/nollhomelab-jellyfin.png"
+      changed_when: false
 ...

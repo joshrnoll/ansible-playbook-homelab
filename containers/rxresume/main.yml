@@ -1,0 +1,103 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: rxresume # Service/container name
+    deploy_container_host_group_name: rxresume # Host group for container to be deployed to
+    deploy_container_service_image: amruthpillai/reactive-resume # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: v4.1.7 # Image tag -- ex. latest
+    deploy_container_service_port: "3000" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_env_vars: # Customize or omit
+      PORT: "3000"
+      NODE_ENV: "production"
+      PUBLIC_URL: http://rxresume.{{ tailnet_name }}:3000
+      STORAGE_URL: http://minio.{{ tailnet_name }}:9000/default
+      CHROME_TOKEN: "{{ rxresume_chrome_token }}"
+      CHROME_URL: ws://chrome-browserless.{{ tailnet_name }}:3000
+      DATABASE_URL: postgresql://{{ rxresume_db_user }}:{{ rxresume_db_password }}@rxresume-db.{{ tailnet_name }}:5432/{{ rxresume_db_name }}
+      ACCESS_TOKEN_SECRET: "{{ rxresume_access_token_secret }}"
+      REFRESH_TOKEN_SECRET: "{{ rxresume_refresh_token_secret }}"
+      MAIL_FROM: "{{ gmail_address }}"
+      SMTP_URL: smtp://{{ gmail_address }}:{{ gmail_app_pass }}@smtp.gmail.com:587
+      STORAGE_ENDPOINT: minio
+      STORAGE_PORT: "9000"
+      STORAGE_BUCKET: default
+      STORAGE_ACCESS_KEY: "{{ minio_root_user }}"
+      STORAGE_SECRET_KEY: "{{ minio_root_password }}"
+      STORAGE_USE_SSL: "false"
+      STORAGE_SKIP_BUCKET_CHECK: "false"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Install RX Resume DB
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_no_serve: true
+        tailscale_container_service_name: rxresume-db
+        tailscale_container_image: postgres
+        tailscale_container_tag: 16-alpine
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/rxresume-db/data:/var/lib/postgresql/data
+        tailscale_container_env_vars:
+          POSTGRES_USER: "{{ rxresume_db_user }}"
+          POSTGRES_PASSWORD: "{{ rxresume_db_password }}"
+          POSTGRES_DB: "{{ rxresume_db_name }}"
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+
+    - name: Install browserless chrome
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_no_serve: true
+        tailscale_container_service_name: chrome-browserless
+        tailscale_container_image: ghcr.io/browserless/chromium
+        tailscale_container_tag: v2.23.0
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_env_vars:
+          TIMEOUT: "10000"
+          CONCURRENT: "10"
+          TOKEN: "{{ rxresume_chrome_token }}"
+          EXIT_ON_HEALTH_FAILURE: "true"
+          PRE_REQUEST_HEALTH_CHECK: "true"
+
+    - name: Install MinIO
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_no_serve: true
+        tailscale_container_service_name: minio
+        tailscale_container_image: minio/minio
+        tailscale_container_tag: latest
+        tailscale_container_userspace_networking: "false"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/minio/data:/data
+        tailscale_container_env_vars:
+          MINIO_ROOT_USER: "{{ minio_root_user }}"
+          MINIO_ROOT_PASSWORD: "{{ minio_root_password }}"
+        tailscale_container_commands: server /data --console-address ":9001"
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...

@@ -27,7 +27,7 @@
         tailscale_container_image: ghcr.io/jittering/traefik-kop
         tailscale_container_tag: 0.14.1-next-1978118-{{ arch }}
         tailscale_container_no_serve: true
-        tailscale_container_userspace_networking: "false"
+        tailscale_container_userspace_networking: "true"
         tailscale_container_volumes:
            - /var/run/docker.sock:/var/run/docker.sock
         tailscale_container_env_vars:

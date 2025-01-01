@@ -1,0 +1,139 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_userspace_networking: "true"
+    deploy_container_service_name: nextcloud # Service/container name
+    deploy_container_host_group_name: nextcloud # Host group for container to be deployed to
+    deploy_container_service_image: nollhomelab-nextcloud # Container image -- ex. louislam/uptime-kuma
+    deploy_container_service_tag: 30.0.2-apache # Image tag -- ex. latest
+    deploy_container_service_port: "80" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes:
+      - /home/{{ ansible_user }}/nextcloud-data:/var/www/html
+    deploy_container_env_vars: 
+      
+      ###########################
+      # NEXTCLOUD CONFIGURATION #
+      ###########################
+      NEXTCLOUD_ADMIN_USER: "{{ nextcloud_admin_user }}"
+      NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_admin_password }}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.{{ domain_name }} nextcloud.{{ tailnet_name }}"
+      TRUSTED_PROXIES: "{{ traefik_ip[0] }}"
+      OVERWRITEHOST: "nextcloud.nollhome.casa"
+      OVERWRITEPROTOCOL: "https"
+      OVERWRITECLIURL: "https://nextcloud.nollhome.casa"
+      APACHE_DISABLE_REWRITE_IP: "1"
+      
+      ##########################
+      # DATABASE CONFIGURATION #
+      ##########################
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: "{{ nextcloud_db_user }}"
+      POSTGRES_PASSWORD: "{{ nextcloud_db_password }}"
+      POSTGRES_HOST: nextcloud-db.{{ tailnet_name }}
+      
+      #######################
+      # REDIS CONFIGURATION #
+      #######################
+      REDIS_HOST: nextcloud-redis.{{ tailnet_name }}
+      REDIS_HOST_PORT: "6379"
+      
+      #######################
+      # EMAIL CONFIGURATION #
+      #######################
+      SMTP_HOST: smtp.gmail.com
+      SMTP_SECURE: tls
+      SMTP_PORT: "587"
+      SMTP_AUTHTYPE: "LOGIN"
+      SMTP_NAME: "{{ gmail_address }}"
+      SMTP_PASSWORD: "{{ gmail_app_pass }}"
+      MAIL_FROM_ADDRESS: "{{ gmail_address }}"
+      MAIL_DOMAIN: "gmail.com"
+
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Look up IP address for traefik
+      ansible.builtin.set_fact:
+        traefik_ip: "{{ query ('community.dns.lookup', 'traefik.nollhome.casa') }}"
+
+    - name: Create images directory on server
+      become: true
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/nextcloud/images
+        state: directory
+        mode: "0774"
+        owner: "1000"
+        group: "docker"
+
+    - name: Copy Dockerfile to server
+      become: true
+      ansible.builtin.template:
+        src: Dockerfile-template.j2
+        dest: /home/{{ ansible_user }}/nextcloud/images/Dockerfile
+        mode: "0774"
+        owner: "1000"
+        group: "docker"
+
+    - name: Build custom Docker image with SMB/CIFS support
+      community.docker.docker_image:
+        build:
+          path: /home/{{ ansible_user }}/nextcloud/images
+        name: nollhomelab-nextcloud
+        tag: "{{ deploy_container_service_tag }}"
+        source: build
+    
+    - name: Install Nextcloud DB
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_no_serve: true
+        tailscale_container_service_name: nextcloud-db
+        tailscale_container_image: postgres
+        tailscale_container_tag: 16-alpine
+        tailscale_container_userspace_networking: "true"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/nextcloud-db/data:/var/lib/postgresql/data
+        tailscale_container_env_vars:
+          POSTGRES_USER: "{{ nextcloud_db_user }}"
+          POSTGRES_PASSWORD: "{{ nextcloud_db_password }}"
+          POSTGRES_DB: nextcloud
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+
+    - name: Install Nextcloud Redis
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_no_serve: true
+        tailscale_container_service_name: nextcloud-redis
+        tailscale_container_image: docker.io/library/redis
+        tailscale_container_tag: alpine
+        tailscale_container_userspace_networking: "true"
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/nextcloud-redis/data:/data
+        tailscale_container_commands: --save 60 1 --loglevel warning
+        tailscale_container_labels:
+          nautical-backup.enable: "true"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...

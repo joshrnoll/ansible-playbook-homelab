@@ -35,7 +35,7 @@
     - name: Mount book folder from NAS
       become: true
       ansible.posix.mount:
-        src: //10.0.30.10/Media/media/books
+        src: //10.0.30.11/Media/media/books
         path: /home/{{ ansible_user }}/cwa/books
         opts: "rw,vers=3,username={{ truenas_username }},password={{ truenas_password }},uid=1000,gid=999"
         fstype: cifs
