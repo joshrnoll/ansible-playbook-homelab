@@ -20,9 +20,8 @@
         server_baseline_fedora_packages:
           - tmux
           - bind-utils
+          - cronie 
+          - cronie-anacron
         server_baseline_proxmox_packages:
           - tmux
-
-- name: Create VM Templates
-  ansible.builtin.import_playbook: proxmox/create-vm-templates.yml
 ...

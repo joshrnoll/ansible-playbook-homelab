@@ -32,7 +32,7 @@
         proxmox_template_vm_proxmox_api_token_secret: "{{ proxmox_api_token_secret }}"
 
         # Optional customizations for ubuntu
-        proxmox_template_vm_ubuntu_storage: "ceph-pool-01"
+        proxmox_template_vm_ubuntu_storage: "ha-zfs-storage"
         proxmox_template_vm_ubuntu_name: ubuntu-2204-template
         proxmox_template_vm_ubuntu_memory: 4096
         proxmox_template_vm_ubuntu_cores: 1
@@ -42,7 +42,7 @@
         proxmox_template_vm_ubuntu_vlan: 30
 
         # Optional customizations for fedora
-        proxmox_template_vm_fedora_storage: "ceph-pool-01"
+        proxmox_template_vm_fedora_storage: "ha-zfs-storage"
         proxmox_template_vm_fedora_name: fedora-40-template
         proxmox_template_vm_fedora_memory: 4096
         proxmox_template_vm_fedora_cores: 1
@@ -53,7 +53,10 @@
 
         # Set to true if you have slow storage to avoid file locks
         proxmox_template_vm_slow_storage: true
-        
-- name: Create VMs
-  ansible.builtin.import_playbook: create-vms.yml
+
+#################################
+# TO BE REPLACED WITH TERRAFORM #
+#################################
+# - name: Create VMs
+#   ansible.builtin.import_playbook: create-vms.yml
 ...
