@@ -27,9 +27,9 @@ echo "$VAULT_PASS" > "$VAULT_PASS_FILE"
 ###############################################################
 trap 'rm -f "$VAULT_PASS_FILE"' EXIT
 
-###################################################
-# CALL PLAYBOOK FOR PROXMOX SETUP AND VM CREATION #
-###################################################
+#######################################################################
+# CALL PLAYBOOK FOR PROXMOX SETUP AND CLOUD-INIT VM TEMPLATE CREATION #
+#######################################################################
 ansible-playbook -i hosts.yml baseline/proxmox/main.yml \
 --extra-vars "ansible_become_pass=$BECOME_PASS root_playbook_dir=$PWD" \
 --vault-password-file "$VAULT_PASS_FILE"
