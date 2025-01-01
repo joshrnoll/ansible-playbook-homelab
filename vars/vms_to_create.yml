@@ -2,14 +2,14 @@
 vms_to_create:
   - name: pihole  # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
     vmid: 100  # VMID of the new VM
-    template: 8239  # VMID of the template to clone
+    template: 8238  # VMID of the template to clone
     memory: 4096  # OPTIONAL - Memory in MB
     cores: 2  # OPTIONAL - CPU Cores
     node: opti-hst-02  # Hostname of the node that the VM will be created on
     ciuser: "{{ ciuser }}"  # OPTIONAL - Username to create with Cloud Init
     cipassword: "{{ cipassword }}"  # OPTIONAL - Password to provide with Cloud Init
     sshkeys: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
-    storage: ceph-pool-01  # Where the VM disk will be stored
+    storage: ha-zfs-storage  # Where the VM disk will be stored
     disk_size: 64G  # Size of the VM boot disk
     vlan: 30  # OPTIONAL - Vlan tag
     ip_address: 10.0.30.75/24  # OPTIONAL - IP address to configure with Cloud Init
@@ -19,14 +19,14 @@ vms_to_create:
 
   - name: media-srv  # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
     vmid: 105  # VMID of the new VM
-    template: 9809  # VMID of the template to clone
+    template: 9808  # VMID of the template to clone
     memory: 16384  # OPTIONAL - Memory in MB
     cores: 4  # OPTIONAL - CPU Cores
     node: opti-hst-01  # Hostname of the node that the VM will be created on
     ciuser: "{{ ciuser }}"  # OPTIONAL - Username to create with Cloud Init
     cipassword: "{{ cipassword }}"  # OPTIONAL - Password to provide with Cloud Init
     sshkeys: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
-    storage: ceph-pool-01  # Where the VM disk will be stored
+    storage: ha-zfs-storage  # Where the VM disk will be stored
     disk_size: 207052M  # Size of the VM boot disk
     vlan: 30  # OPTIONAL - Vlan tag
     ip_address: 10.0.30.15/24  # OPTIONAL - IP address to configure with Cloud Init
@@ -36,17 +36,34 @@ vms_to_create:
 
   - name: vm-110-ubuntu  # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
     vmid: 110  # VMID of the new VM
-    template: 3097  # VMID of the template to clone
+    template: 3096  # VMID of the template to clone
     memory: 16384  # OPTIONAL - Memory in MB
     cores: 4  # OPTIONAL - CPU Cores
     node: opti-hst-03  # Hostname of the node that the VM will be created on
     ciuser: "{{ ciuser }}"  # OPTIONAL - Username to create with Cloud Init
     cipassword: "{{ cipassword }}"  # OPTIONAL - Password to provide with Cloud Init
     sshkeys: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
-    storage: ceph-pool-01  # Where the VM disk will be stored
+    storage: ha-zfs-storage  # Where the VM disk will be stored
     disk_size: 100G  # Size of the VM boot disk
     vlan: 30  # OPTIONAL - Vlan tag
     ip_address: 10.0.30.35/24  # OPTIONAL - IP address to configure with Cloud Init
+    gateway: 10.0.30.1  # OPTIONAL - Gateway to configure with Cloud Init
+    nameservers:  # OPTIONAL - Nameservers to configure with Cloud Init
+      - 10.0.30.75
+  
+  - name: nextcloud-srv  # Name as displayed in Proxmox web UI. Name cannot have an UNDERSCORE _
+    vmid: 115  # VMID of the new VM
+    template: 8238  # VMID of the template to clone
+    memory: 16384  # OPTIONAL - Memory in MB
+    cores: 4  # OPTIONAL - CPU Cores
+    node: opti-hst-02  # Hostname of the node that the VM will be created on
+    ciuser: "{{ ciuser }}"  # OPTIONAL - Username to create with Cloud Init
+    cipassword: "{{ cipassword }}"  # OPTIONAL - Password to provide with Cloud Init
+    sshkeys: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"  # OPTIONAL - SSH Keys to provide with Cloud Init
+    storage: ha-zfs-storage  # Where the VM disk will be stored
+    disk_size: 1T  # Size of the VM boot disk
+    vlan: 30  # OPTIONAL - Vlan tag
+    ip_address: 10.0.30.40/24  # OPTIONAL - IP address to configure with Cloud Init
     gateway: 10.0.30.1  # OPTIONAL - Gateway to configure with Cloud Init
     nameservers:  # OPTIONAL - Nameservers to configure with Cloud Init
       - 10.0.30.75
