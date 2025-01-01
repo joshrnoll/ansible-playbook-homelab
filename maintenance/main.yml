@@ -1,0 +1,6 @@
+---
+- ansible.builtin.import_playbook: ubuntu.yml
+- ansible.builtin.import_playbook: fedora.yml
+- ansible.builtin.import_playbook: proxmox.yml
+- ansible.builtin.import_playbook: docker.yml
+...

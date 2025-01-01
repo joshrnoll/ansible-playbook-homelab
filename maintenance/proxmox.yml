@@ -1,0 +1,8 @@
+- name: Update Proxmox nodes
+  hosts: proxmox_hosts
+
+  tasks:
+    - name: Update OS
+      become: true
+      ansible.builtin.apt:
+        upgrade: dist

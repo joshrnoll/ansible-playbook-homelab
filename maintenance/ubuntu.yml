@@ -1,0 +1,14 @@
+- name: Update Ubuntu servers
+  hosts: ubuntu
+
+  tasks:
+    - name: Update OS
+      become: true
+      ansible.builtin.apt:
+        upgrade: dist
+      register: updates
+
+    - name: Reboot server
+      become: true
+      ansible.builtin.reboot:
+      when: updates.changed

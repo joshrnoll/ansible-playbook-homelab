@@ -1,0 +1,13 @@
+- name: Prune Docker system
+  hosts: docker
+
+  tasks:
+    - name: Prune everything except containers
+      community.docker.docker_prune:
+        containers: false
+        images: true
+        images_filters:
+          dangling: false
+        networks: true
+        volumes: true
+        builder_cache: true

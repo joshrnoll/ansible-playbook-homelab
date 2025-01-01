@@ -1,0 +1,15 @@
+- name: Update Fedora servers
+  hosts: fedora
+
+  tasks:
+    - name: Upgrade all packages
+      become: true
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+      register: updates
+
+    - name: Reboot server
+      become: true
+      ansible.builtin.reboot:
+      when: updates.changed
