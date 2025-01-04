@@ -1,0 +1,44 @@
+---
+- name: Deploy {{ deploy_container_service_name }}
+  hosts: "{{ deploy_container_host_group_name }}"
+  vars:
+    deploy_container_service_name: ersatz # Service/container name
+    deploy_container_host_group_name: ersatz # Host group for container to be deployed to
+    deploy_container_service_image: jasongdove/ersatztv # Container image -- ex. louislam/uptime-kuma
+    # Set dynamically in tasks
+    # deploy_container_service_tag: # Image tag -- ex. latest
+    deploy_container_service_port: "8409" # Must be quoted -- ex. "80" not 80
+    deploy_container_service_scheme: http # http or https
+    deploy_container_forward_auth: false # true or false
+    deploy_container_tailnet_name: "{{ tailnet_name }}"
+    deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+    deploy_container_domain_name: "{{ domain_name }}"
+    deploy_container_cloudflare_email: "{{ cloudflare_email }}"
+    deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    deploy_container_volumes: # Customize or omit
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config:/root/.local/share/ersatztv
+    deploy_container_env_vars: # Customize or omit
+      TZ: "America/New_York"
+    deploy_container_labels: # Customize or omit
+      - key: "nautical-backup.enable"
+        value: "true"
+
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Set image tag for ARM system
+      ansible.builtin.set_fact:
+        deploy_container_service_tag: latest-arm64
+      when: ansible_facts['architecture'] == "aarch64"
+
+    - name: Set image tag for x86 system
+      ansible.builtin.set_fact:
+        deploy_container_service_tag: latest
+      when: ansible_facts['architecture'] == "x86_64"
+
+    - name: Deploy container
+      ansible.builtin.include_role:
+        name: "{{ root_playbook_dir }}/roles/deploy_container"
+...
