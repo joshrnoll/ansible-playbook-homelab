@@ -17,7 +17,7 @@
     deploy_container_volumes: # Customize or omit
       - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/data:/app/backend/data
     deploy_container_env_vars: # Customize or omit
-      WEBUI_NAME: "Cognita"
+      WEBUI_NAME: "NollHomeLab AI"
       OLLAMA_BASE_URL: "https://ollama.nollhome.casa"
       ENABLE_OAUTH_SIGNUP: "true"
       ENABLE_RAG_WEB_SEARCH: "true"
@@ -28,8 +28,8 @@
       OAUTH_MERGE_ACCOUNTS_BY_EMAIL: "true"
       OAUTH_CLIENT_ID: "{{ openwebui_client_id }}"
       OAUTH_CLIENT_SECRET: "{{ openwebui_client_secret }}"
-      OPENID_PROVIDER_URL: https://authentik.nollhome.casa/application/o/openwebui/.well-known/openid-configuration
-      OPENID_REDIRECT_URI: https://ai.nollhome.casa/oauth/oidc/callback
+      OPENID_PROVIDER_URL: https://authentik.{{ domain_name }}/application/o/openwebui/.well-known/openid-configuration
+      OPENID_REDIRECT_URI: https://ai.{{ domain_name }}/oauth/oidc/callback
       OAUTH_PROVIDER_NAME: NollHomeLab SSO
       OAUTH_SCOPES: "openid email profile"
       OAUTH_ROLES_CLAIM: "roles"
