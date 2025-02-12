@@ -18,7 +18,7 @@
       - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/data:/app/backend/data
     deploy_container_env_vars: # Customize or omit
       WEBUI_NAME: "NollHomeLab AI"
-      OLLAMA_BASE_URL: "https://ollama.nollhome.casa"
+      OLLAMA_BASE_URL: "https://ollama.{{ domain_name }}"
       ENABLE_OAUTH_SIGNUP: "true"
       ENABLE_RAG_WEB_SEARCH: "true"
       RAG_WEB_SEARCH_ENGINE: "searxng"
