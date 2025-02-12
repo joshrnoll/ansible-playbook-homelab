@@ -5,7 +5,7 @@
     deploy_container_service_name: linkwarden # Service/container name
     deploy_container_host_group_name: linkwarden # Host group for container to be deployed to
     deploy_container_service_image: ghcr.io/linkwarden/linkwarden # Container image -- ex. louislam/uptime-kuma
-    deploy_container_service_tag: v2.8.3 # Image tag -- ex. latest
+    deploy_container_service_tag: v2.9.2 # Image tag -- ex. latest
     deploy_container_service_port: "3000" # Must be quoted -- ex. "80" not 80
     deploy_container_service_scheme: http # http or https
     deploy_container_forward_auth: false # true or false
@@ -24,6 +24,8 @@
       NEXT_PUBLIC_DISABLE_REGISTRATION: "true"
       NEXT_PUBLIC_CREDENTIALS_ENABLED: "false"
       NEXT_PUBLIC_EMAIL_PROVIDER: "true"
+      NEXT_PUBLIC_OLLAMA_ENDPOINT_URL: https://ollama.nollhome.casa
+      OLLAMA_MODEL: llama3.2:1b
       EMAIL_FROM: "nollhomelab@gmail.com"
       EMAIL_SERVER: "smtp://{{ gmail_address }}:{{ gmail_app_pass }}@smtp.gmail.com:587"
       DISABLE_NEW_SSO_USERS: "false"

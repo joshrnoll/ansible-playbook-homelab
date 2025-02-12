@@ -3,4 +3,8 @@
 
 [botdetection.ip_limit]
 # activate link_token method in the ip_limit method
-link_token = true
+link_token = false
+
+[botdetection.ip_lists]
+block_ip = []
+pass_ip = []

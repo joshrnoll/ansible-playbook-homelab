@@ -77,7 +77,7 @@
         name: joshrnoll.homelab.tailscale_container
       vars:
         tailscale_container_tailnet_name: "{{ tailnet_name }}"
-        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}?ephemeral=false"
         tailscale_container_service_name: redis-traefik
         tailscale_container_image: redis
         tailscale_container_tag: 7.4.1

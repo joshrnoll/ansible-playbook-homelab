@@ -39,12 +39,12 @@
 
     - name: Set image tag for ARM system
       ansible.builtin.set_fact:
-        deploy_container_service_tag: arm64v8-10.10.3
+        deploy_container_service_tag: arm64v8-10.10.5
       when: ansible_facts['architecture'] == "aarch64"
 
     - name: Set image tag for x86 system
       ansible.builtin.set_fact:
-        deploy_container_service_tag: 10.10.3
+        deploy_container_service_tag: 10.10.5
       when: ansible_facts['architecture'] == "x86_64"
 
     - name: Mount media drive from NAS

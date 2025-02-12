@@ -5,7 +5,7 @@
     deploy_container_service_name: search # Service/container name
     deploy_container_host_group_name: searxng # Host group for container to be deployed to
     deploy_container_service_image: docker.io/searxng/searxng # Container image -- ex. louislam/uptime-kuma
-    deploy_container_service_tag: 2024.11.27-342d32119 # Image tag -- ex. latest
+    deploy_container_service_tag: 2025.2.12-d456f3dd9 # Image tag -- ex. latest
     deploy_container_service_port: "8080" # Must be quoted -- ex. "80" not 80
     deploy_container_service_scheme: http # http or https
     deploy_container_forward_auth: false # true or false
@@ -17,7 +17,7 @@
     deploy_container_volumes: # Customize or omit
       - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config:/etc/searxng
     deploy_container_env_vars: # Customize or omit
-      SEARXNG_BASE_URL: https://search.{{ domain_name }}
+      SEARXNG_HOSTNAME: "search.{{ domain_name }}"
     deploy_container_labels: # Customize or omit
       - key: "nautical-backup.enable"
         value: "true"
