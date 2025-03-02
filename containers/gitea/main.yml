@@ -5,7 +5,7 @@
     deploy_container_service_name: gitea # Service/container name
     deploy_container_host_group_name: gitea # Host group for container to be deployed to
     deploy_container_service_image: gitea/gitea # Container image -- ex. louislam/uptime-kuma
-    deploy_container_service_tag: 1.22.3 # Image tag -- ex. latest
+    deploy_container_service_tag: 1.23.4 # Image tag -- ex. latest
     deploy_container_service_port: "3000" # Must be quoted -- ex. "80" not 80
     deploy_container_service_scheme: http # http or https
     deploy_container_forward_auth: false # true or false
