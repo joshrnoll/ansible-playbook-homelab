@@ -2,7 +2,7 @@
 - name: Install Authentik
   hosts: authentik
   vars:
-    authentik_version: 2024.10.5
+    authentik_version: 2025.2.1
 
   tasks:
     - name: Include variables
