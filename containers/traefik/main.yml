@@ -2,7 +2,7 @@
 - name: Install Traefik
   hosts: traefik
   vars:
-    traefik_version: v3.2.3
+    traefik_version: v3.3.4
 
   tasks:
     - name: Include variables
