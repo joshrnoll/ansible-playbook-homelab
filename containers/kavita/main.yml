@@ -15,7 +15,7 @@
     deploy_container_cloudflare_email: "{{ cloudflare_email }}"
     deploy_container_cloudflare_api_token: "{{ cloudflare_api_token }}"
     deploy_container_volumes: # Customize or omit
-      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config:/config
+      - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/config:/kavita/config
       - /home/{{ ansible_user }}/{{ deploy_container_service_name }}/books:/books
     deploy_container_env_vars: # Customize or omit
       PUID: "1000"

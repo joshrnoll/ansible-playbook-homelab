@@ -5,10 +5,10 @@
     deploy_container_service_name: cwa # Service/container name
     deploy_container_host_group_name: cwa # Host group for container to be deployed to
     deploy_container_service_image: crocodilestick/calibre-web-automated # Container image -- ex. louislam/uptime-kuma
-    deploy_container_service_tag: V2.1.2 # Image tag -- ex. latest
+    deploy_container_service_tag: V3.0.4 # Image tag -- ex. latest
     deploy_container_service_port: "8083" # Must be quoted -- ex. "80" not 80
     deploy_container_service_scheme: http # http or https
-    deploy_container_forward_auth: true # true or false
+    deploy_container_forward_auth: false # true or false
     deploy_container_tailnet_name: "{{ tailnet_name }}"
     deploy_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
     deploy_container_domain_name: "{{ domain_name }}"

@@ -5,7 +5,7 @@
     deploy_container_service_name: gitea # Service/container name
     deploy_container_host_group_name: gitea # Host group for container to be deployed to
     deploy_container_service_image: gitea/gitea # Container image -- ex. louislam/uptime-kuma
-    deploy_container_service_tag: 1.23.4 # Image tag -- ex. latest
+    deploy_container_service_tag: 1.23.5 # Image tag -- ex. latest
     deploy_container_service_port: "3000" # Must be quoted -- ex. "80" not 80
     deploy_container_service_scheme: http # http or https
     deploy_container_forward_auth: false # true or false
@@ -33,6 +33,8 @@
       GITEA__openid__ENABLE_OPENID_SIGNUP: "true"
       GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION: "true"
       GITEA__service__DISABLE_REGISTRATION: "false"
+      GITEA__mirror__ENABLED: "true"
+      GITEA__log__LEVEL: "Debug"
     deploy_container_labels:
       - key: "traefik.http.middlewares.gitea-login-redirect.redirectregex.regex"
         value: "^https://gitea.{{ domain_name }}/user/login*"
@@ -45,6 +47,44 @@
     - name: Include vars
       ansible.builtin.include_vars:
         dir: "{{ root_playbook_dir }}/vars"
+
+    - name: Ensure runner directory exists with correct permissions
+      become: true
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/gitea/runner
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "docker"
+        mode: "0775"
+
+    - name: Copy runner config to server
+      become: true
+      ansible.builtin.template:
+        src: runner-config.yml
+        dest: /home/{{ ansible_user }}/gitea/runner/config.yml
+        owner: "{{ ansible_user }}"
+        group: "docker"
+        mode: "0775"
+
+    - name: Deploy Gitea Runner
+      ansible.builtin.include_role:
+        name: joshrnoll.homelab.tailscale_container
+      vars:
+        tailscale_container_tailnet_name: "{{ tailnet_name }}" 
+        tailscale_container_oauth_client_secret: "{{ tailscale_containers_oauth_client['secret'] }}"
+        tailscale_container_service_name: gitea-runner
+        tailscale_container_image: docker.io/gitea/act_runner
+        tailscale_container_tag: latest
+        tailscale_container_no_serve: true
+        tailscale_container_volumes:
+          - /home/{{ ansible_user }}/gitea/runner/config.yml:/config.yml
+          - /home/{{ ansible_user }}/gitea/runner/data:/data
+          - /var/run/docker.sock:/var/run/docker.sock
+        tailscale_container_env_vars:
+          CONFIG_FILE: "/config.yml"
+          GITEA_INSTANCE_URL: "https://gitea.{{ domain_name }}"
+          GITEA_RUNNER_REGISTRATION_TOKEN: "{{ GITEA_RUNNER_REGISTRATION_TOKEN }}"
+          GITEA_RUNNER_NAME: "nollhomelab_runner"
 
     - name: Deploy container
       ansible.builtin.include_role:
